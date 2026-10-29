@@ -38,7 +38,7 @@ let n = 0;
 const browser = await chromium.launch();
 
 try {
-  const page = await browser.newPage({ viewport: { width: 1200, height: 900 } });
+  const page = await browser.newPage({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 2 });
   const shot = async (seconds) => {
     const name = String(n++).padStart(3, "0") + ".png";
     await page.screenshot({ path: join(frames, name) });
@@ -51,7 +51,7 @@ try {
   await page.waitForFunction(() => !!window.__tabTrail);
   await page.waitForTimeout(1200);
   await shot(2);
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 7; i++) {
     await page.keyboard.press("Tab");
     await page.waitForTimeout(500);
     await shot(0.9);
@@ -74,7 +74,7 @@ try {
       "-i",
       join(frames, "list.txt"),
       "-vf",
-      "fps=10,scale=960:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=128[p];[b][p]paletteuse=dither=none",
+      "fps=10,scale=1280:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=160[p];[b][p]paletteuse=dither=none",
       "-loop",
       "0",
       OUT,
