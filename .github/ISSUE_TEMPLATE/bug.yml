@@ -1,0 +1,39 @@
+name: Bug report
+description: Tab trail got something wrong, or broke a page.
+labels: [bug]
+body:
+  - type: textarea
+    id: happened
+    attributes:
+      label: What happened
+      description: What you did and what Tab trail showed.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What should happen
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Copy log output
+      description: Open the Log in the panel, press Copy log and paste it here.
+      render: text
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and OS
+      placeholder: Chrome 141 on macOS 26
+    validations:
+      required: true
+  - type: input
+    id: url
+    attributes:
+      label: Public URL
+      description: A page where we can see it, if there is one.
+    validations:
+      required: false

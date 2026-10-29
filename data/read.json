@@ -1,0 +1,10 @@
+{
+  "items": [
+    "A green 0 means that check found nothing. A red number means it found something, and the chips under it take you there.",
+    "In the Log, OK passed, PROBLEM needs a fix, SKIPPED was not judged and says why, and INFO is a note.",
+    "Out of order is judged only for the Tab presses you make. Press Tab to the end, then Shift+Tab back.",
+    "Hidden focus is judged once the page stops scrolling. Press Play to test every stop.",
+    "Lost focus is judged only for the popups you open and close.",
+    "Everything is tested at your window size. Try a narrow window too."
+  ]
+}

@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lost focus</title>
+<style>
+[role=dialog] { position: fixed; top: 40px; left: 40px; padding: 20px; background: #fff; border: 1px solid #333; }
+</style>
+</head>
+<body>
+<main>
+<h1>Lost focus</h1>
+<button type="button" id="open">Open</button>
+<div role="dialog" aria-label="Note" id="note" hidden>
+<p>A short note.</p>
+<button type="button" id="close">Close</button>
+</div>
+</main>
+<script>
+var note = document.getElementById("note");
+document.getElementById("open").addEventListener("click", function () {
+  note.hidden = false;
+  document.getElementById("close").focus();
+});
+document.getElementById("close").addEventListener("click", function () {
+  note.hidden = true;
+});
+</script>
+</body>
+</html>

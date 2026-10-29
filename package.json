@@ -1,0 +1,54 @@
+{
+  "name": "tab-trail",
+  "version": "1.0.0",
+  "updated": "October 29, 2026",
+  "description": "Tab order and focus order checker. A bookmarklet that draws every Tab stop and marks what Tab never reaches.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "author": "Matjaž Korošec (https://matjazkorosec.com)",
+  "homepage": "https://matjazkorosec.com/tools/tab-trail",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/matjazkorosec/tab-trail.git"
+  },
+  "bugs": {
+    "url": "https://github.com/matjazkorosec/tab-trail/issues"
+  },
+  "keywords": [
+    "accessibility",
+    "a11y",
+    "wcag",
+    "keyboard",
+    "tab-order",
+    "focus-order",
+    "bookmarklet",
+    "testing"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.mjs"
+    },
+    "./tab-trail.js": "./dist/tab-trail.js"
+  },
+  "files": [
+    "dist",
+    "data",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "docs": "node scripts/docs.mjs",
+    "check": "node scripts/check.mjs",
+    "test": "node --test test/*.test.mjs",
+    "pretest:e2e": "npm run build",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1"
+  },
+  "sizeBudget": 240000
+}

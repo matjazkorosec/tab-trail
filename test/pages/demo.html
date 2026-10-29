@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Corner shop</title>
+<style>
+body { margin: 0; font: 18px/1.5 system-ui, sans-serif; color: #222; background: #faf7f2; }
+header { display: flex; align-items: center; gap: 32px; padding: 24px 48px; }
+header nav { display: flex; gap: 24px; }
+a { color: #222; }
+main { padding: 8px 48px; max-width: 640px; }
+h1 { font-size: 40px; margin: 16px 0 8px; }
+form { display: flex; gap: 8px; margin: 24px 0; }
+input { font: inherit; padding: 8px 12px; border: 1px solid #888; border-radius: 6px; }
+button, .fake { font: inherit; display: inline-block; padding: 8px 20px; border: 1px solid #333; border-radius: 999px; background: #fff; }
+.pointer { cursor: pointer; }
+.row { display: flex; gap: 16px; align-items: center; margin: 24px 0; }
+.menu { position: relative; display: inline-block; }
+.menu ul { display: none; position: absolute; left: 0; top: 100%; margin: 0; padding: 8px; list-style: none; background: #fff; }
+.menu:hover ul { display: block; }
+</style>
+</head>
+<body>
+<header>
+<a href="#home"><strong>Corner shop</strong></a>
+<nav><a href="#shop">Shop</a><a href="#about">About</a><a href="#contact">Contact</a></nav>
+<div class="menu">
+<span class="fake">Menu</span>
+<ul>
+<li><button type="button" tabindex="-1">Profile</button></li>
+<li><button type="button" tabindex="-1">Sign out</button></li>
+</ul>
+</div>
+</header>
+<main>
+<h1>Sunglasses</h1>
+<p>Round frames, 39 EUR.</p>
+<form onsubmit="return false"><input aria-label="Search" placeholder="Search"><button>Search</button></form>
+<div class="row">
+<span role="button" class="fake pointer">Add to cart</span>
+<a class="fake pointer">Send</a>
+</div>
+<p><a href="#returns">Returns</a></p>
+</main>
+</body>
+</html>

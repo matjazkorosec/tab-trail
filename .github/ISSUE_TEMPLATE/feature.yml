@@ -1,0 +1,27 @@
+name: Feature request
+description: A new check, setting or change to the panel.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: Please wait for a yes here before you open a pull request for it.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What keyboard problem should it catch, or what should it do
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: An example
+      description: A public URL or a small piece of HTML that shows it.
+    validations:
+      required: false
+  - type: input
+    id: wcag
+    attributes:
+      label: WCAG criterion
+      placeholder: 2.4.3
+    validations:
+      required: false

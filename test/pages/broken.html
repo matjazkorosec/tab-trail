@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Broken on purpose</title>
+<style>
+.fake { display: inline-block; padding: 10px 20px; border: 1px solid #333; border-radius: 999px; }
+.pointer { cursor: pointer; }
+.menu { position: relative; display: inline-block; }
+.menu ul { display: none; position: absolute; left: 0; top: 100%; margin: 0; padding: 8px; list-style: none; background: #fff; }
+.menu:hover ul { display: block; }
+</style>
+</head>
+<body>
+<main>
+<h1>Broken on purpose</h1>
+<span role="button" class="fake pointer">Add to cart</span>
+<a class="fake pointer">Send</a>
+<div class="menu">
+<span class="fake">Menu</span>
+<ul>
+<li><button type="button" tabindex="-1">Profile</button></li>
+<li><button type="button" tabindex="-1">Orders</button></li>
+<li><button type="button" tabindex="-1">Sign out</button></li>
+</ul>
+</div>
+</main>
+</body>
+</html>

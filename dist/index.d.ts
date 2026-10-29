@@ -1,0 +1,14 @@
+export declare const VERSION: string;
+export declare const UPDATED: string;
+export declare const CODE: string;
+export declare const FILE: string;
+export declare const HREF: string;
+export declare const GROUPS: { id: "red" | "read" | "work" | "settings"; title: string }[];
+export declare const FEATURES: { title: string; short: string; long: string; group: "red" | "read" | "work" | "settings"; wcag?: string }[];
+export declare const KEYS: { title?: string; items: string[] };
+export declare const READ: { title?: string; items: string[] };
+export declare const QUIET: { title?: string; items: string[] };
+export declare const API: { call: string; gives: string }[];
+export declare const LIMITS: string[];
+export declare const VS: string[];
+export declare const CHANGES: { v: string; t: string }[];

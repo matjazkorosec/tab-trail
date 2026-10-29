@@ -1,0 +1,10 @@
+{
+  "title": "Keys",
+  "items": [
+    "Tab, Shift+Tab: Move along the trail.",
+    "Click a number: Focus jumps there. Click empty space and no stop is lit, so the next Tab is not judged.",
+    "Space, Tab, Escape: Pause Play. A click on the page pauses it too.",
+    "Ctrl+Shift+F: Jumps into the panel, on a Mac and on Windows. Escape takes you back to the stop you were on.",
+    "Escape: Closes it once you click empty space on the page, so the page's own menus keep Escape. The close button or the bookmark again close it too."
+  ]
+}

@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Keyboard trap</title>
+</head>
+<body>
+<main>
+<h1>Keyboard trap</h1>
+<label>First <input type="text" id="first"></label>
+<label>Message <input type="text" id="trap"></label>
+<label>Last <input type="text" id="last"></label>
+</main>
+<script>
+document.getElementById("trap").addEventListener("keydown", function (e) {
+  if (e.key === "Tab") e.preventDefault();
+});
+</script>
+</body>
+</html>

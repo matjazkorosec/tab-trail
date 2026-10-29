@@ -1,0 +1,6 @@
+[
+  "Accessibility Insights, ANDI, WAVE, taba11y, Polypane, Firefox's Show Tabbing Order and the paid axe DevTools keyboard test all number your Tab stops, and Insights and paid axe flag some Tab problems too. Chrome DevTools shows the order of the HTML, not the order Tab takes. Tab trail numbers them too, then checks the things below.",
+  "It reads your CSS for menus that open only for the mouse, tests every stop for focus hidden under a sticky bar, and catches focus lost when a popup closes.",
+  "It hands each problem to your AI with a selector and a fix hint, and gives your tests window.__tabTrail.",
+  "Use them together. Tab trail is the keyboard part."
+]

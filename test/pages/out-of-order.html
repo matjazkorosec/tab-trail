@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Out of order</title>
+</head>
+<body>
+<main>
+<h1>Out of order</h1>
+<label>First <input type="text" id="first"></label>
+<label>Second <input type="text" id="second"></label>
+<label>Third <input type="text" id="third"></label>
+</main>
+<script>
+document.getElementById("first").addEventListener("keydown", function (e) {
+  if (e.key !== "Tab" || e.shiftKey) return;
+  e.preventDefault();
+  document.getElementById("third").focus();
+});
+</script>
+</body>
+</html>

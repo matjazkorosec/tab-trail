@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hover menus</title>
+<style>
+.menu { position: relative; display: inline-block; }
+.menu ul { display: none; position: absolute; left: 0; top: 100%; margin: 0; padding: 8px; list-style: none; background: #fff; }
+.menu:hover ul { display: block; }
+</style>
+</head>
+<body>
+<main>
+<h1>Hover menus</h1>
+<label>Name <input type="text" name="name"></label>
+<div class="menu">
+<span>Menu</span>
+<ul>
+<li><a href="#profile">Profile</a></li>
+<li><a href="#orders">Orders</a></li>
+</ul>
+</div>
+</main>
+</body>
+</html>
