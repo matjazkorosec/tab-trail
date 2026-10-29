@@ -1,0 +1,14 @@
+* { box-sizing: border-box; }
+body { margin: 0; font: 17px/1.5 system-ui, sans-serif; color: #2a2420; background: #f6f1ea; }
+main { padding: 48px 56px; max-width: 640px; }
+h1 { font: 600 44px/1.1 Georgia, serif; margin: 0 0 20px; }
+a { color: #2a2420; }
+label { display: block; margin: 0 0 16px; font-size: 15px; color: #5f564c; }
+input { display: block; width: 320px; margin-top: 6px; font: inherit; font-size: 17px; color: #2a2420; padding: 10px 14px; border: 1px solid #c9bdb0; border-radius: 10px; background: #fff; }
+button, .fake, [role=button] { font: inherit; display: inline-block; padding: 10px 22px; border: 1px solid #2a2420; border-radius: 999px; background: #fff; color: #2a2420; text-decoration: none; }
+.menu { position: relative; display: inline-block; }
+.menu > span { display: inline-block; padding: 10px 22px; border: 1px solid #2a2420; border-radius: 999px; background: #fff; }
+.menu ul { min-width: 160px; margin: 0; padding: 8px; list-style: none; background: #fff; border-radius: 12px; box-shadow: 0 8px 24px rgba(42, 36, 32, 0.15); }
+.menu li + li { margin-top: 6px; }
+[role=dialog] { border: 1px solid #e6ddd2; border-radius: 16px; padding: 24px; background: #fff; box-shadow: 0 12px 32px rgba(42, 36, 32, 0.2); }
+[role=dialog] p { margin: 0 0 16px; }
