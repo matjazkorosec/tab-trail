@@ -1,14 +1,16 @@
-import { spawn, spawnSync } from "node:child_process";
-import { readFileSync, writeFileSync, mkdtempSync, rmSync, statSync, mkdirSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { readFileSync, mkdtempSync, rmSync, statSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { chromium } from "@playwright/test";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const PAGE = "http://127.0.0.1:4310/" + (process.argv[2] || "demo.html");
+const PAGE = process.argv[2] || "https://matjazkorosec.com/tools/tab-trail";
 const OUT = join(root, ".github/assets/trail.gif");
 const LIMIT = 3 * 1024 * 1024;
+const W = 1440;
+const H = 720;
 
 if (spawnSync("ffmpeg", ["-version"]).status !== 0) {
   console.error("ffmpeg is not installed. Install it and run this again:");
@@ -18,47 +20,34 @@ if (spawnSync("ffmpeg", ["-version"]).status !== 0) {
   process.exit(1);
 }
 
-const up = async () => {
-  try {
-    return (await fetch(PAGE)).ok;
-  } catch {
-    return false;
-  }
-};
-
-let server = null;
-if (!(await up())) {
-  server = spawn(process.execPath, [join(root, "test/serve.mjs")], { stdio: "ignore" });
-  for (let i = 0; i < 50 && !(await up()); i++) await new Promise((r) => setTimeout(r, 100));
-}
-
-const frames = mkdtempSync(join(tmpdir(), "tab-trail-gif-"));
-const list = [];
-let n = 0;
+const dir = mkdtempSync(join(tmpdir(), "tab-trail-gif-"));
 const browser = await chromium.launch();
 
 try {
-  const page = await browser.newPage({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 2 });
-  const shot = async (seconds) => {
-    const name = String(n++).padStart(3, "0") + ".png";
-    await page.screenshot({ path: join(frames, name) });
-    list.push("file '" + name + "'", "duration " + seconds);
-  };
-
-  await page.goto(PAGE);
-  await shot(1);
+  const context = await browser.newContext({
+    viewport: { width: W, height: H },
+    recordVideo: { dir, size: { width: W, height: H } },
+  });
+  const page = await context.newPage();
+  const t0 = Date.now();
+  await page.goto(PAGE, { waitUntil: "networkidle" });
+  await page.addStyleTag({
+    content: "nextjs-portal{display:none!important}html{scrollbar-width:none}html::-webkit-scrollbar{display:none}",
+  });
+  const start = (Date.now() - t0) / 1000;
+  await page.waitForTimeout(3000);
   await page.evaluate(readFileSync(join(root, "dist/tab-trail.js"), "utf8"));
   await page.waitForFunction(() => !!window.__tabTrail);
-  await page.waitForTimeout(1200);
-  await shot(2);
-  for (let i = 0; i < 7; i++) {
+  await page.waitForTimeout(1500);
+  for (let i = 0; i < 5; i++) {
     await page.keyboard.press("Tab");
-    await page.waitForTimeout(500);
-    await shot(0.9);
+    await page.waitForTimeout(1000);
   }
-  await shot(2.5);
-  list.push("file '" + String(n - 1).padStart(3, "0") + ".png'");
-  writeFileSync(join(frames, "list.txt"), list.join("\n") + "\n");
+  await page.waitForTimeout(2500);
+  const length = (Date.now() - t0) / 1000 - start;
+  await page.close();
+  const video = await page.video().path();
+  await context.close();
 
   mkdirSync(dirname(OUT), { recursive: true });
   const ff = spawnSync(
@@ -67,14 +56,14 @@ try {
       "-y",
       "-loglevel",
       "error",
-      "-f",
-      "concat",
-      "-safe",
-      "0",
+      "-ss",
+      String(start),
+      "-t",
+      String(length),
       "-i",
-      join(frames, "list.txt"),
+      video,
       "-vf",
-      "fps=10,scale=1280:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=160[p];[b][p]paletteuse=dither=none",
+      "fps=12,scale=1280:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=192:stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=4:diff_mode=rectangle",
       "-loop",
       "0",
       OUT,
@@ -91,6 +80,5 @@ try {
   }
 } finally {
   await browser.close();
-  if (server) server.kill();
-  rmSync(frames, { recursive: true, force: true });
+  rmSync(dir, { recursive: true, force: true });
 }

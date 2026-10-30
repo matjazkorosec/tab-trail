@@ -1,4 +1,4 @@
-<p align="center"><img src=".github/assets/trail.gif" width="960" alt="Tab trail on a small shop page: numbered dots and lines show the path of the Tab key, the orange ring moves with each Tab press, and 2 things Tab never reaches, an Add to cart button and a Send link, are marked in red. The panel on the right counts 7 stops, 2 missed spots and 1 hover-only menu."></p>
+<p align="center"><img src=".github/assets/trail.gif" width="960" alt="Tab trail running on its own page, matjazkorosec.com/tools/tab-trail. The panel opens and counts 20 stops for the Tab key, 2 spots that look clickable but Tab skips (Add to cart, Send) and 1 menu that opens only on mouse hover. Then the orange ring follows 5 Tab presses along numbered dots joined by lines."></p>
 
 # Tab trail
 
