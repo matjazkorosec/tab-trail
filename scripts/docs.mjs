@@ -19,12 +19,14 @@ const TEST = [
   "  test.setTimeout(300_000);",
   '  await page.goto("http://localhost:5173/");',
   "  await page.evaluate(script);",
+  '  await page.evaluate(() => window.__tabTrail.play({ ignore: [".third-party-widget"] }));',
   "  const { total } = await page.evaluate(() => window.__tabTrail.state());",
   '  for (let i = 0; i <= total; i++) await page.keyboard.press("Tab");',
   '  for (let i = 0; i <= total; i++) await page.keyboard.press("Shift+Tab");',
-  '  const report = await page.evaluate(() => window.__tabTrail.play({ ignore: [".third-party-widget"] }));',
+  "  const report = await page.evaluate(() => window.__tabTrail.report());",
   '  await test.info().attach("tab-trail-report.txt", { body: report, contentType: "text/plain" });',
-  "  const { done } = await page.evaluate(() => window.__tabTrail.state());",
+  "  const { done, untested } = await page.evaluate(() => window.__tabTrail.state());",
+  '  console.log("Not tested:", untested.join(", ") || "none");',
   "  const problems = await page.evaluate(() => window.__tabTrail.problems());",
   "  expect(done).toBe(true);",
   "  expect(problems.map((p) => `${p.check}: ${p.selector}`)).toEqual([]);",
@@ -41,12 +43,23 @@ const TEST = [
   "      problems(): Problem[];",
   "      report(): string;",
   "      log(): Line[];",
-  "      state(): { walked: number; total: number; done: boolean };",
+  "      state(): { walked: number; total: number; done: boolean; untested: string[] };",
   "      close(): void;",
   "    };",
   "  }",
   "}",
 ].join("\n");
+
+const STEP_READ = { title: "Press Tab, or press Play", rows: ["Play it", "Log"] };
+const STEP_AI = { title: "Hand it to your AI", rows: ["Copy for AI"] };
+
+function pageOrder(FEATURES) {
+  const pick = (t) => FEATURES.find((f) => f.title === t);
+  const lifted = [...STEP_READ.rows, ...STEP_AI.rows];
+  const red = FEATURES.filter((f) => f.group === "red");
+  const rest = FEATURES.filter((f) => f.group !== "red" && !lifted.includes(f.title));
+  return [...STEP_READ.rows.map(pick), ...red, ...STEP_AI.rows.map(pick), ...rest];
+}
 
 const escape = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
@@ -67,6 +80,7 @@ export async function readmeBlocks() {
   const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
   const chars = HREF.length.toLocaleString("en-US");
   const raw = "https://raw.githubusercontent.com/matjazkorosec/tab-trail/v" + pkg.version + "/dist/tab-trail.js";
+  const order = pageOrder(FEATURES);
   const red = FEATURES.filter((f) => f.group === "red");
   return {
     console:
@@ -78,7 +92,7 @@ export async function readmeBlocks() {
       chars +
       ". In Firefox, paste the script in the console instead.",
     checks: red
-      .map((f, i) => i + 1 + ". **" + f.title + "** (WCAG " + f.wcag + "): " + f.long + " [See it](" + SITE + "#" + showId(f.title) + ")")
+      .map((f) => "- **" + String(order.indexOf(f) + 1).padStart(2, "0") + " " + f.title + "** (WCAG " + f.wcag + "): " + f.long + " [See it](" + SITE + "#" + showId(f.title) + ")")
       .join("\n"),
     api: API.map((a) => "- `" + a.call + "`: " + a.gives.replace(/\bVERSION\b/g, pkg.version)).join("\n"),
     test:
@@ -121,15 +135,12 @@ export async function buildDocs() {
     showId(f.title) +
     ")\n";
 
-  const numbered = GROUPS.flatMap((g) => FEATURES.filter((f) => f.group === g.id));
-  const num = (f) => numbered.indexOf(f) + 1;
-  const groupMd = (g) =>
-    "## " +
-    g.title +
-    "\n\n" +
-    FEATURES.filter((f) => f.group === g.id)
-      .map((f) => feature(f, num(f)))
-      .join("\n");
+  const order = pageOrder(FEATURES);
+  const num = (f) => order.indexOf(f) + 1;
+  const lifted = [...STEP_READ.rows, ...STEP_AI.rows];
+  const section = (title, items) => "## " + title + "\n\n" + items.map((f) => feature(f, num(f))).join("\n");
+  const groupMd = (g) => section(g.title, FEATURES.filter((f) => f.group === g.id && !lifted.includes(f.title)));
+  const stepMd = (st) => section(st.title, st.rows.map((t) => FEATURES.find((f) => f.title === t)));
 
   const red = GROUPS.filter((g) => g.id === "red");
   const rest = GROUPS.filter((g) => g.id !== "red");
@@ -138,7 +149,7 @@ export async function buildDocs() {
 
   return {
     "checks.md": page("Checks", red.map(groupMd).join("\n")),
-    "features.md": page("Features", rest.map(groupMd).join("\n")),
+    "features.md": page("Features", [stepMd(STEP_READ), stepMd(STEP_AI), ...rest.map(groupMd)].join("\n")),
     "keys.md": page(
       "Keys",
       "## " +

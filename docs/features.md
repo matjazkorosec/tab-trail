@@ -2,9 +2,37 @@
 
 Generated from data/. Edit the files in data/, then run `npm run docs`.
 
+## Press Tab, or press Play
+
+### 01 Play it
+
+No Tab key? Press Play, it walks every stop.
+
+Play moves focus through every stop for you and checks each one, then 1 line sums up all 7 checks. It only moves focus, it never clicks.
+
+[See it](https://matjazkorosec.com/tools/tab-trail#show-play-it)
+
+### 02 Log
+
+See every check, the good ones too.
+
+Every check as it runs: OK, PROBLEM, SKIPPED with why, or INFO. Filter it, tick Show WCAG to see each rule, click a stop number to jump there, copy it for a bug report, or keep it live in a new tab.
+
+[See it](https://matjazkorosec.com/tools/tab-trail#show-log)
+
+## Hand it to your AI
+
+### 10 Copy for AI
+
+Paste the problems into your AI. It gets the fix.
+
+Copies only the problems, each with its WCAG rule, a CSS selector, the HTML, the component and a fix hint. Paste it into your coding AI and it knows where to look.
+
+[See it](https://matjazkorosec.com/tools/tab-trail#show-copy-for-ai)
+
 ## How to read the trail
 
-### 08 Tab order
+### 11 Tab order
 
 Numbers show where Tab goes. The orange one is where you are.
 
@@ -12,7 +40,7 @@ Each dot is 1 press of the Tab key, in the order the keyboard visits, and the on
 
 [See it](https://matjazkorosec.com/tools/tab-trail#show-tab-order)
 
-### 09 Hidden links
+### 12 Hidden links
 
 Skip links show as dashed dots.
 
@@ -20,7 +48,7 @@ Some links stay hidden until Tab reaches them, like "Skip to content". They get 
 
 [See it](https://matjazkorosec.com/tools/tab-trail#show-hidden-links)
 
-### 10 Inside dialogs
+### 13 Inside dialogs
 
 A dialog opens? The trail goes in too.
 
@@ -28,7 +56,7 @@ When a page opens a modal dialog (the HTML <dialog> element), the trail goes in 
 
 [See it](https://matjazkorosec.com/tools/tab-trail#show-inside-dialogs)
 
-### 11 Late arrivals
+### 14 Late arrivals
 
 Scroll, and new buttons get counted.
 
@@ -36,7 +64,7 @@ It checks again as you scroll. Buttons that only appear later, like a back to to
 
 [See it](https://matjazkorosec.com/tools/tab-trail#show-late-arrivals)
 
-### 12 Big pages
+### 15 Big pages
 
 Over 50 stops? See 50 at a time.
 
@@ -46,15 +74,7 @@ Over 50 stops, it shows 50 at a time. Next and Previous page through them, and T
 
 ## How to work with it
 
-### 13 Copy for AI
-
-Paste the problems into your AI. It gets the fix.
-
-Copies only the problems, each with its WCAG rule, a CSS selector, the HTML, the component and a fix hint. Paste it into your coding AI and it knows where to look.
-
-[See it](https://matjazkorosec.com/tools/tab-trail#show-copy-for-ai)
-
-### 14 Out of the way
+### 16 Out of the way
 
 Drag the panel anywhere, or send it to a corner.
 
@@ -62,15 +82,7 @@ Grab the panel and drag it anywhere, or press the corner button to move it to th
 
 [See it](https://matjazkorosec.com/tools/tab-trail#show-out-of-the-way)
 
-### 15 Play it
-
-No Tab key? Press Play, it walks every stop.
-
-Play moves focus through every stop for you and checks each one, then 1 line sums up all 7 checks. It only moves focus, it never clicks.
-
-[See it](https://matjazkorosec.com/tools/tab-trail#show-play-it)
-
-### 16 The count
+### 17 The count
 
 Fix it, run it again, compare.
 
@@ -78,21 +90,13 @@ The panel counts the stops and the spots Tab skips. Fix something, run it again 
 
 [See it](https://matjazkorosec.com/tools/tab-trail#show-the-count)
 
-### 17 Find it
+### 18 Find it
 
 Click a red spot in the list to see it.
 
 The panel lists every spot Tab never reaches, named by its label or text, 50 at a time. Click one and the page scrolls to it and outlines it.
 
 [See it](https://matjazkorosec.com/tools/tab-trail#show-find-it)
-
-### 18 Log
-
-See every check, the good ones too.
-
-Every check as it runs: OK, PROBLEM, SKIPPED with why, or INFO. Filter it, tick Show WCAG to see each rule, click a stop number to jump there, copy it for a bug report, or keep it live in a new tab.
-
-[See it](https://matjazkorosec.com/tools/tab-trail#show-log)
 
 ### 19 Keyboard
 

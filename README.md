@@ -43,13 +43,13 @@ The script is in `node_modules/tab-trail/dist/tab-trail.js`. The example below r
 ## What it lists in red
 
 <!-- checks:start -->
-1. **Missed spots** (WCAG 2.1.1 A): A red box marks something that looks clickable, like a box with a pointer cursor, a button role or a click handler in the HTML. The keyboard never gets there. [See it](https://matjazkorosec.com/tools/tab-trail#show-missed-spots)
-2. **Hover menus** (WCAG 2.1.1 A, 2.4.7 AA): A menu that opens on mouse hover but never when Tab reaches it hides its links from keyboard users. Tab trail reads the page's CSS and marks each one with a red box. [See it](https://matjazkorosec.com/tools/tab-trail#show-hover-menus)
-3. **Forced order** (WCAG 2.4.3 A): An element with tabindex="5" gets Tab before the rest of the page, wherever it sits. When that changes the order, it is listed in red: set it to 0 and move the element in the HTML instead. If it was first anyway, the Log only notes it. [See it](https://matjazkorosec.com/tools/tab-trail#show-forced-order)
-4. **Hidden focus** (WCAG 2.4.11 AA): When Tab lands on something a sticky header, a cookie bar or a chat button covers completely, the panel lists it in red. Click it to scroll it into view. Fix it and Tab there again: it leaves the list. This check is new in WCAG 2.2 AA. [See it](https://matjazkorosec.com/tools/tab-trail#show-hidden-focus)
-5. **Keyboard trap** (WCAG 2.1.2 A): When Tab and Shift+Tab both leave focus on the same spot, a keyboard user can't get out. The panel lists that stop in red, once, like "2: Message". A spot that keeps Tab but says how to leave, like a code editor, is not red. [See it](https://matjazkorosec.com/tools/tab-trail#show-keyboard-trap)
-6. **Lost focus** (WCAG 2.4.3 A): When a popup or cookie bar closes, focus should go back to the button that opened it. If it drops to the top of the page instead, the panel lists it in red, like "2 → Start". [See it](https://matjazkorosec.com/tools/tab-trail#show-lost-focus)
-7. **Out of order** (WCAG 2.4.3 A): Each time Tab jumps out of order, the panel lists the jump in red. A popup that blocks the page must get Tab first, or it is flagged too. [See it](https://matjazkorosec.com/tools/tab-trail#show-out-of-order)
+- **03 Missed spots** (WCAG 2.1.1 A): A red box marks something that looks clickable, like a box with a pointer cursor, a button role or a click handler in the HTML. The keyboard never gets there. [See it](https://matjazkorosec.com/tools/tab-trail#show-missed-spots)
+- **04 Hover menus** (WCAG 2.1.1 A, 2.4.7 AA): A menu that opens on mouse hover but never when Tab reaches it hides its links from keyboard users. Tab trail reads the page's CSS and marks each one with a red box. [See it](https://matjazkorosec.com/tools/tab-trail#show-hover-menus)
+- **05 Forced order** (WCAG 2.4.3 A): An element with tabindex="5" gets Tab before the rest of the page, wherever it sits. When that changes the order, it is listed in red: set it to 0 and move the element in the HTML instead. If it was first anyway, the Log only notes it. [See it](https://matjazkorosec.com/tools/tab-trail#show-forced-order)
+- **06 Hidden focus** (WCAG 2.4.11 AA): When Tab lands on something a sticky header, a cookie bar or a chat button covers completely, the panel lists it in red. Click it to scroll it into view. Fix it and Tab there again: it leaves the list. This check is new in WCAG 2.2 AA. [See it](https://matjazkorosec.com/tools/tab-trail#show-hidden-focus)
+- **07 Keyboard trap** (WCAG 2.1.2 A): When Tab and Shift+Tab both leave focus on the same spot, a keyboard user can't get out. The panel lists that stop in red, once, like "2: Message". A spot that keeps Tab but says how to leave, like a code editor, is not red. [See it](https://matjazkorosec.com/tools/tab-trail#show-keyboard-trap)
+- **08 Lost focus** (WCAG 2.4.3 A): When a popup or cookie bar closes, focus should go back to the button that opened it. If it drops to the top of the page instead, the panel lists it in red, like "2 → Start". [See it](https://matjazkorosec.com/tools/tab-trail#show-lost-focus)
+- **09 Out of order** (WCAG 2.4.3 A): Each time Tab jumps out of order, the panel lists the jump in red. A popup that blocks the page must get Tab first, or it is flagged too. [See it](https://matjazkorosec.com/tools/tab-trail#show-out-of-order)
 <!-- checks:end -->
 
 Each check in full: [docs/checks.md](docs/checks.md). Everything else it does: [docs/features.md](docs/features.md). Keys and how to read the trail: [docs/keys.md](docs/keys.md).
@@ -95,12 +95,14 @@ test("Tab reaches everything", async ({ page }) => {
   test.setTimeout(300_000);
   await page.goto("http://localhost:5173/");
   await page.evaluate(script);
+  await page.evaluate(() => window.__tabTrail.play({ ignore: [".third-party-widget"] }));
   const { total } = await page.evaluate(() => window.__tabTrail.state());
   for (let i = 0; i <= total; i++) await page.keyboard.press("Tab");
   for (let i = 0; i <= total; i++) await page.keyboard.press("Shift+Tab");
-  const report = await page.evaluate(() => window.__tabTrail.play({ ignore: [".third-party-widget"] }));
+  const report = await page.evaluate(() => window.__tabTrail.report());
   await test.info().attach("tab-trail-report.txt", { body: report, contentType: "text/plain" });
-  const { done } = await page.evaluate(() => window.__tabTrail.state());
+  const { done, untested } = await page.evaluate(() => window.__tabTrail.state());
+  console.log("Not tested:", untested.join(", ") || "none");
   const problems = await page.evaluate(() => window.__tabTrail.problems());
   expect(done).toBe(true);
   expect(problems.map((p) => `${p.check}: ${p.selector}`)).toEqual([]);
@@ -117,7 +119,7 @@ declare global {
       problems(): Problem[];
       report(): string;
       log(): Line[];
-      state(): { walked: number; total: number; done: boolean };
+      state(): { walked: number; total: number; done: boolean; untested: string[] };
       close(): void;
     };
   }
@@ -125,7 +127,7 @@ declare global {
 ```
 <!-- test:end -->
 
-Already run axe in your tests? Keep it: axe reads the HTML, Tab trail walks the Tab key. Play moves focus itself, so it checks Missed spots, Hover menus, Forced order and Hidden focus. The Tab presses before it, once forward and once back through every stop, judge Out of order and Keyboard trap; Lost focus needs a popup opened and closed. Add the script once per page: running it again closes it. Play takes about half a second a stop, so 300_000 ms covers about 600 stops.
+Already run axe in your tests? Keep it: axe reads the HTML, Tab trail walks the Tab key. Play moves focus itself, so it checks Missed spots, Hover menus, Forced order and Hidden focus. Then the test presses Tab once forward and once back through every stop, counted after Play so stops that appear late are in, to judge Out of order and Keyboard trap; Lost focus needs a popup opened and closed. Add the script once per page: running it again closes it. Play takes about half a second a stop, so 300_000 ms covers about 600 stops.
 
 ## What it does to your page
 

@@ -9,7 +9,7 @@ declare global {
       problems(): Problem[];
       report(): string;
       log(): Line[];
-      state(): { walked: number; total: number; done: boolean };
+      state(): { walked: number; total: number; done: boolean; untested: string[] };
       close(): void;
     };
   }

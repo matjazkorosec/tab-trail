@@ -4,7 +4,7 @@ Generated from data/. Edit the files in data/, then run `npm run docs`.
 
 ## What it lists in red
 
-### 01 Missed spots
+### 03 Missed spots
 
 WCAG `2.1.1 A`
 
@@ -14,7 +14,7 @@ A red box marks something that looks clickable, like a box with a pointer cursor
 
 [See it](https://matjazkorosec.com/tools/tab-trail#show-missed-spots)
 
-### 02 Hover menus
+### 04 Hover menus
 
 WCAG `2.1.1 A, 2.4.7 AA`
 
@@ -24,7 +24,7 @@ A menu that opens on mouse hover but never when Tab reaches it hides its links f
 
 [See it](https://matjazkorosec.com/tools/tab-trail#show-hover-menus)
 
-### 03 Forced order
+### 05 Forced order
 
 WCAG `2.4.3 A`
 
@@ -34,7 +34,7 @@ An element with tabindex="5" gets Tab before the rest of the page, wherever it s
 
 [See it](https://matjazkorosec.com/tools/tab-trail#show-forced-order)
 
-### 04 Hidden focus
+### 06 Hidden focus
 
 WCAG `2.4.11 AA`
 
@@ -44,7 +44,7 @@ When Tab lands on something a sticky header, a cookie bar or a chat button cover
 
 [See it](https://matjazkorosec.com/tools/tab-trail#show-hidden-focus)
 
-### 05 Keyboard trap
+### 07 Keyboard trap
 
 WCAG `2.1.2 A`
 
@@ -54,7 +54,7 @@ When Tab and Shift+Tab both leave focus on the same spot, a keyboard user can't 
 
 [See it](https://matjazkorosec.com/tools/tab-trail#show-keyboard-trap)
 
-### 06 Lost focus
+### 08 Lost focus
 
 WCAG `2.4.3 A`
 
@@ -64,7 +64,7 @@ When a popup or cookie bar closes, focus should go back to the button that opene
 
 [See it](https://matjazkorosec.com/tools/tab-trail#show-lost-focus)
 
-### 07 Out of order
+### 09 Out of order
 
 WCAG `2.4.3 A`
 
