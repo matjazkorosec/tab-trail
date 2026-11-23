@@ -920,6 +920,49 @@ function ghostCheck(s) {
   probGhost.set(s, logs[logs.length - 1]);
   return true;
 }
+var skipBad = null, noSkip = 0, skipSaid = null, probSkip = null, SKIPW = /(^|[^a-z\u010d\u0161\u017e])(skip|jump|main|content|presko\u010di|vsebina)(?![a-z\u010d\u0161\u017e])/i;
+function mainRegion() { return [].filter.call(document.querySelectorAll("main,[role=main]"), shown)[0] || null; }
+function tucked(e) {
+  var r = e.getBoundingClientRect();
+  return (r.width < 2 && r.height < 2) || r.bottom + scrollY <= 0 || r.right + scrollX <= 0;
+}
+function skipLink() {
+  for (var i = 0; i < 3 && i < stops.length; i++) {
+    var e = stops[i], h = e.getAttribute("href") || "";
+    if (e.tagName === "A" && h.charAt(0) === "#" && h.length > 1 && (SKIPW.test(label(e)) || (e !== deep() && tucked(e)))) return e;
+  }
+  return null;
+}
+function ahead(m) { return stops.filter(function (x) { return !within(m, x) && m.compareDocumentPosition(x) & 2; }).length; }
+function skipCheck() {
+  var l = skipLink(), m = mainRegion(), why = "", n = 0, id = "", t = null;
+  if (l) {
+    id = l.getAttribute("href").slice(1);
+    try { id = decodeURIComponent(id); } catch (x) {}
+    t = document.getElementById(id) || document.getElementsByName(id)[0];
+    if (!t) why = "#" + id + " is missing";
+    else if (!shown(t)) why = "#" + id + " is hidden";
+    else if (!stops.some(function (x) { return x === t || within(t, x) || t.compareDocumentPosition(x) & 4; })) why = "nothing after #" + id + " takes focus";
+  } else if (m) {
+    n = ahead(m);
+    if (n < 15) n = 0;
+  }
+  var key = [l, why, n, !!m].join("|");
+  if (key === skipSaid) return;
+  skipSaid = key;
+  if (probSkip) probSkip.fixed = true;
+  probSkip = null;
+  skipBad = l && why ? { link: l, why: why, to: t } : null;
+  noSkip = n;
+  renderJumps();
+  queue();
+  if (skipBad) log("PROBLEM", "Broken skip link", [ref(l), " goes nowhere: " + why + "."], aiOf(W_BYPASS, "The skip link moves focus past the header to the main content.", t ? "Make #" + id + " visible, and put the main content after it." : "Give the main content id=\"" + id + "\", or point the link at the id it has.", [["Element", l], ["Main content", m]]));
+  else if (n) log("PROBLEM", "Broken skip link", [n + " stops before the main content, and no skip link."], aiOf(W_BYPASS, "A skip link as the first stop moves focus past the header to the main content.", "Add <a href=\"#main\">Skip to content</a> as the first link, and id=\"main\" on <main>.", [["Main content", m]]));
+  else if (l) return log("OK", "Broken skip link", [ref(l), " goes to #" + id + "."]);
+  else if (m) return log("OK", "Broken skip link", [pl(ahead(m), "stop comes", "stops come") + " before the main content, so a skip link is not needed."]);
+  else return log("INFO", "Broken skip link", ["No main region, so the skip link check has nothing to aim at."]);
+  probSkip = logs[logs.length - 1];
+}
 function live(m) { return stops.indexOf(m) >= 0; }
 function runs(list) {
   var out = [];
@@ -1115,6 +1158,11 @@ function renderJumps() {
     chipUl(jumpBox, byStop(covered), stopName, stopGo);
   }
   var gl = ghosts.filter(live), nl = noRing.filter(live);
+  if (skipBad) {
+    count(1, " skip link goes nowhere", true, false, jumpBox);
+    chipUl(jumpBox, [skipBad.link], function (l) { return stopName(l) + " \u2192 " + skipBad.why; }, stopGo);
+  }
+  if (noSkip) count(noSkip, " stops before the main content, and no skip link", true, false, jumpBox);
   if (gl.length) {
     count(gl.length, gl.length === 1 ? " stop you can't see when Tab is on it" : " stops you can't see when Tab is on them", true, false, jumpBox);
     chipUl(jumpBox, runs(gl), function (g) { return span(g) + ": " + label(g[0]) + ", " + GHOST[ghostOf.get(g[0])].replace(/^(is|has) (inside )?/, ""); }, function (g) { stopGo(g[0]); });
@@ -1356,8 +1404,8 @@ function browser() {
   if ((m = u.match(/Version\/(\d+)[^ ]* (Mobile\/\S+ )?Safari/))) return "Safari " + m[1];
   return u;
 }
-var CHECKS = ["Missed spots", "Hover menus", "Forced order", "Out of order", "Keyboard trap", "Hidden focus", "Lost focus", "No focus style", "Ghost stop"];
-var WCAG = { "Missed spots": "2.1.1 A", "Hover menus": "2.1.1 A", "Out of order": "2.4.3 A", "Forced order": "2.4.3 A", "Keyboard trap": "2.1.2 A", "Lost focus": "2.4.3 A", "Hidden focus": "2.4.11 AA", "No focus style": "2.4.7 AA", "Ghost stop": "2.4.7 AA" };
+var CHECKS = ["Missed spots", "Hover menus", "Forced order", "Out of order", "Keyboard trap", "Hidden focus", "Lost focus", "No focus style", "Ghost stop", "Broken skip link"];
+var WCAG = { "Missed spots": "2.1.1 A", "Hover menus": "2.1.1 A", "Out of order": "2.4.3 A", "Forced order": "2.4.3 A", "Keyboard trap": "2.1.2 A", "Lost focus": "2.4.3 A", "Hidden focus": "2.4.11 AA", "No focus style": "2.4.7 AA", "Ghost stop": "2.4.7 AA", "Broken skip link": "2.4.1 A" };
 function showUrl(f) { return "https://matjazkorosec.com/tools/tab-trail#show-" + f.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
 function ranChecks() {
   var out = [];
@@ -1426,6 +1474,7 @@ function review() {
   if (lastStops < 0) log("INFO", "Scan", ["Found " + pl(stops.length, "stop", "stops") + ". Read " + pl(cssRules, "CSS rule", "CSS rules") + " from " + pl(cssSheets, "style sheet", "style sheets") + "."]);
   else if (stops.length !== lastStops) log("INFO", "Scan", ["Page changed: " + pl(stops.length, "stop", "stops") + " now, " + lastStops + " before."]);
   lastStops = stops.length;
+  skipCheck();
   cssBlocked.forEach(function (h) {
     if (seenCss.has(h)) return;
     seenCss.add(h);
@@ -1567,7 +1616,7 @@ function logText() {
   });
   return out.join("\n");
 }
-var W_FORCE = "2.4.3 Focus Order (Level A). tabindex above 0 pulls it ahead of the page. It fails WCAG 2.4.3 when that order makes no sense (F44).", W_TRAP = "2.1.2 No Keyboard Trap (Level A)", W_KEY = "2.1.1 Keyboard (Level A)", W_VIS = "2.4.7 Focus Visible (Level AA)", W_ORDER = "2.4.3 Focus Order (Level A)", W_HIDE = "2.4.11 Focus Not Obscured (Minimum) (Level AA)", W_NAME = "4.1.2 Name, Role, Value (Level A)";
+var W_FORCE = "2.4.3 Focus Order (Level A). tabindex above 0 pulls it ahead of the page. It fails WCAG 2.4.3 when that order makes no sense (F44).", W_TRAP = "2.1.2 No Keyboard Trap (Level A)", W_KEY = "2.1.1 Keyboard (Level A)", W_VIS = "2.4.7 Focus Visible (Level AA)", W_ORDER = "2.4.3 Focus Order (Level A)", W_HIDE = "2.4.11 Focus Not Obscured (Minimum) (Level AA)", W_NAME = "4.1.2 Name, Role, Value (Level A)", W_BYPASS = "2.4.1 Bypass Blocks (Level A)";
 function cssId(t) { return /^[A-Za-z][\w-]*$/.test(t); }
 function sel(e) {
   if (!e || e.nodeType !== 1) return "";
@@ -1715,6 +1764,7 @@ function verifyOf(e) {
   if (e.f === "Forced order") return "Reload the page and run Tab trail again: " + el("Element") + " has no tabindex above 0, its stop number matches its place on the page, and the Forced order count goes down by 1.";
   if (e.f === "Hover menus") return "Press Tab until a link inside " + el("Element") + " has focus: the menu opens while focus is inside it, and Tab trail no longer lists it under hover menus.";
   if (e.f === "Hidden focus") return "Press Tab until " + el("Element") + " has focus: part of it shows next to " + el("Covered by") + ", and its Hidden focus line in the log says in view or partly covered.";
+  if (e.f === "Broken skip link") return el("Element") ? "Reload the page, press Tab once and then Enter on " + el("Element") + ": the next Tab lands inside the main content." : "Reload the page and press Tab once: the first stop is a skip link, and Enter on it moves focus to the main content.";
   if (e.f === "Ghost stop") return a.crit === W_NAME ? "Reload the page and run Tab trail again: " + el("Element") + " is no longer inside aria-hidden, or Tab skips it, and the Ghost stop count goes down by 1." : "Press Tab until " + el("Element") + " has focus: it shows on screen, and its Ghost stop line in the log says OK.";
   if (e.f === "No focus style") return "Press Tab until " + el("Element") + " has focus: an outline or another visible change shows on it, and its No focus style line in the log says OK.";
   if (e.f === "Keyboard trap") return "Put focus on " + el("Element") + " and press Tab: focus moves on to " + el("Expected next") + ", and the log shows an OK Out of order line.";
@@ -2314,7 +2364,7 @@ function draw() {
   }
   var fr = shownEl && hovers.indexOf(shownEl) < 0 && forced.indexOf(shownEl) >= 0 ? [shownEl.getBoundingClientRect(), isPinned(shownEl)] : null;
   var lr = light.checked && spotEl && spotEl.isConnected ? spotEl.getBoundingClientRect() : null;
-  var key = [shownEl];
+  var key = [shownEl, skipBad && skipBad.why];
   red.forEach(function (x) { if (!x[2]) key.push(x[0], x[1].left + sx, x[1].top + sy, x[1].width, x[1].height); });
   if (fr && !fr[1]) key.push(fr[0].left + sx, fr[0].top + sy, fr[0].width, fr[0].height);
   var keep = page && same(key, boxKey);
@@ -2348,6 +2398,13 @@ function draw() {
     var t = el("text", { x: 0, y: 0, transform: "translate(" + (x + w / 2) + " " + (y + h / 2) + ")" + (v ? " rotate(-90)" : ""), fill: "#d0103a", stroke: "#fff", "stroke-width": 3, "paint-order": "stroke", "font-size": 11, "font-weight": 700, "font-family": "system-ui,sans-serif", "text-anchor": "middle", "dominant-baseline": "middle" }, under);
     t.textContent = runs(edges[ed]).map(span).join(", ");
   });
+  if (skipBad && skipBad.link.isConnected && page && !keep) {
+    var ka = skipBad.link.getBoundingClientRect(), kt = skipBad.to && shown(skipBad.to) ? skipBad.to : mainRegion(), kb = kt ? kt.getBoundingClientRect() : null;
+    var ax = Math.max(ka.left + sx, 13) + 14, ay = Math.max(ka.bottom + sy, 26) + 4, bx = kb ? kb.left + sx + 16 : ax + 160, by = kb ? Math.max(kb.top + sy + 16, ay + 40) : ay + 80;
+    el("path", { d: "M" + ax + " " + ay + "L" + bx + " " + by, fill: "none", stroke: "#d0103a", "stroke-width": 3, "stroke-dasharray": "7 5", "stroke-linecap": "round" }, underPg);
+    el("circle", { cx: bx, cy: by, r: 11, fill: "#fff", stroke: "#d0103a", "stroke-width": 3 }, underPg);
+    el("path", { d: "M" + (bx - 5) + " " + (by - 5) + "l10 10m0 -10l-10 10", stroke: "#d0103a", "stroke-width": 3, "stroke-linecap": "round" }, underPg);
+  }
   if (fr) {
     var hr = fr[0], hp = fr[1];
     if (hp || (page && !keep)) {
@@ -2431,6 +2488,7 @@ function rescan() {
   var fa = deep();
   noOutline = null;
   stops.forEach(function (x) { if (x !== fa && !restSig.has(x)) rest(x); });
+  skipCheck();
   if (!same(drawn, sig())) {
     fill();
     scan();
@@ -2568,10 +2626,10 @@ function step(s) {
 var walkDone = [];
 function untested() {
   var judged = {};
-  logs.forEach(function (e) { if ((e.k === "OK" || e.k === "PROBLEM") && e.f === "Lost focus") judged[e.f] = 1; });
+  logs.forEach(function (e) { if ((e.k === "OK" || e.k === "PROBLEM") && (e.f === "Lost focus" || e.f === "Broken skip link")) judged[e.f] = 1; });
   if (judgedDir[1] && judgedDir[-1]) judged["Out of order"] = judged["Keyboard trap"] = 1;
   openProbs().forEach(function (e) { judged[e.f] = 1; });
-  return ["Out of order", "Keyboard trap", "Lost focus"].filter(function (f) { return !judged[f]; });
+  return ["Out of order", "Keyboard trap", "Lost focus", "Broken skip link"].filter(function (f) { return !judged[f]; });
 }
 function sumDraw() {
   sumLine.hidden = walking || walkEnd !== "done";
@@ -2595,7 +2653,7 @@ function sumDraw() {
   }
   part("Passed", ok, "g");
   part(red.length === 1 ? "Problem" : "Problems", red, "e", true);
-  part("Not tested (" + (tabLeft && popLeft ? "press Tab and Shift+Tab, open and close a popup" : tabLeft ? "press Tab and Shift+Tab" : "open and close a popup") + ")", left, "q");
+  part("Not tested (" + [tabLeft ? "press Tab and Shift+Tab" : "", popLeft ? "open and close a popup" : "", left.indexOf("Broken skip link") >= 0 ? "the page has no main region" : ""].filter(Boolean).join(", ") + ")", left, "q");
 }
 function startWalk() {
   walking = true;
