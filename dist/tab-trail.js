@@ -863,6 +863,68 @@ function where(s) {
   var r = s.getBoundingClientRect();
   return scrollX + "," + scrollY + "," + r.left + "," + r.top;
 }
+var restSig = new WeakMap(), noRing = [], probRing = new Map(), SIG = ["outline-style", "outline-width", "outline-color", "box-shadow", "background-color", "background-image", "color", "text-decoration-line", "text-decoration-color", "opacity", "transform", "filter"];
+function upOf(e) { return e && (e.parentElement || (e.parentNode && e.parentNode.host)); }
+function focusSig(e) {
+  var out = [], up = upOf(e);
+  [[e], [e, "::before"], [e, "::after"], [up], [upOf(up)], [e.nextElementSibling], [e.firstElementChild], [e.labels && e.labels[0]]].forEach(function (x) {
+    if (!x[0]) return;
+    var c = getComputedStyle(x[0], x[1] || null), o = c.outlineStyle !== "none" && c.outlineWidth !== "0px";
+    SIG.forEach(function (k) { if (o || k.indexOf("outline") < 0) out.push(c.getPropertyValue(k)); });
+    ["top", "right", "bottom", "left"].forEach(function (d) {
+      var w = c.getPropertyValue("border-" + d + "-width");
+      out.push(w, w === "0px" ? "" : c.getPropertyValue("border-" + d + "-color"));
+    });
+  });
+  return out.join("|");
+}
+function rest(e) {
+  if (!e) return;
+  if (e.matches(":hover")) restSig.delete(e);
+  else restSig.set(e, focusSig(e));
+}
+var noOutline = null;
+function outlineRule(e) {
+  if (!noOutline) {
+    noOutline = [];
+    var go = function (list, src) {
+      for (var i = 0; i < list.length; i++) {
+        var r = list[i], st = r.style;
+        if (r.cssRules && r.cssRules.length) go(r.cssRules, src);
+        if (r.selectorText && st && (st.outlineStyle === "none" || /^0(px)?$/.test(st.outlineWidth))) parts(r.selectorText).forEach(function (p) { noOutline.push([p, src, p.replace(/:focus(-visible)?(?![\w-])/g, "").trim() || "*"]); });
+      }
+    };
+    Array.prototype.slice.call(document.styleSheets).concat(document.adoptedStyleSheets || []).forEach(function (sh) {
+      try { go(sh.cssRules, sh.href || (sh.ownerNode ? "an inline <style> in the page" : "a style sheet added by script")); } catch (x) {}
+    });
+  }
+  for (var i = 0; i < noOutline.length; i++) {
+    try { if (e.matches(noOutline[i][2])) return noOutline[i]; } catch (x) {}
+  }
+  return null;
+}
+function ringCheck(s) {
+  if (hovers.some(function (h) { return hovSeen.has(h) && within(hovHid.get(h), s); })) return;
+  var was = noRing.indexOf(s) >= 0, before = restSig.get(s);
+  if (!before) return log("SKIPPED", "No focus style", [ref(s), " has no style from before focus yet, or the mouse was on it. Judged on the next visit."]);
+  if (before !== focusSig(s)) {
+    if (!was) return log("OK", "No focus style", [ref(s), " changes when Tab is on it."]);
+    noRing.splice(noRing.indexOf(s), 1);
+    probRing.get(s).fixed = true;
+    probRing.delete(s);
+    renderJumps();
+    queue();
+    return log("OK", "No focus style", [ref(s), " shows focus now."]);
+  }
+  if (was) return;
+  noRing.push(s);
+  renderJumps();
+  queue();
+  announce("No focus style: stop " + (stops.indexOf(s) + 1) + ", " + label(s) + ", shows no focus.");
+  var rule = outlineRule(s);
+  log("PROBLEM", "No focus style", [ref(s), " shows nothing when Tab is on it."], aiOf(W_VIS, "The element shows a visible change when it has keyboard focus.", "Add :focus-visible { outline: 2px solid; outline-offset: 2px } for it" + (rule ? ", or remove outline: none from " + scrub(rule[0]) : "") + ".", [["Element", s, null, true]], rule ? ["CSS rule: " + scrub(rule[0]), "Style sheet: " + cleanUrl(rule[1])] : []));
+  probRing.set(s, logs[logs.length - 1]);
+}
 function check(s, then) {
   function end() {
     var f = then;
@@ -888,6 +950,7 @@ function check(s, then) {
       still = 0;
     } else still++;
     if (still < 2 && ++tries < 90) return requestAnimationFrame(look);
+    ringCheck(s);
     var h = hideInfo(s);
     tested(s);
     hidTested.add(s);
@@ -1007,6 +1070,10 @@ function renderJumps() {
   if (covered.length) {
     count(covered.length, covered.length === 1 ? " stop is hidden when Tab reaches it" : " stops are hidden when Tab reaches them", true, false, jumpBox);
     chipUl(jumpBox, byStop(covered), stopName, stopGo);
+  }
+  if (noRing.length) {
+    count(noRing.length, noRing.length === 1 ? " stop shows no focus when Tab is on it" : " stops show no focus when Tab is on them", true, false, jumpBox);
+    chipUl(jumpBox, byStop(noRing), stopName, stopGo);
   }
   if (trapped.length) {
     count(trapped.length, trapped.length === 1 ? " stop where Tab gets stuck" : " stops where Tab gets stuck", true, false, jumpBox);
@@ -1241,8 +1308,8 @@ function browser() {
   if ((m = u.match(/Version\/(\d+)[^ ]* (Mobile\/\S+ )?Safari/))) return "Safari " + m[1];
   return u;
 }
-var CHECKS = ["Missed spots", "Hover menus", "Forced order", "Out of order", "Keyboard trap", "Hidden focus", "Lost focus"];
-var WCAG = { "Missed spots": "2.1.1 A", "Hover menus": "2.1.1 A", "Out of order": "2.4.3 A", "Forced order": "2.4.3 A", "Keyboard trap": "2.1.2 A", "Lost focus": "2.4.3 A", "Hidden focus": "2.4.11 AA" };
+var CHECKS = ["Missed spots", "Hover menus", "Forced order", "Out of order", "Keyboard trap", "Hidden focus", "Lost focus", "No focus style"];
+var WCAG = { "Missed spots": "2.1.1 A", "Hover menus": "2.1.1 A", "Out of order": "2.4.3 A", "Forced order": "2.4.3 A", "Keyboard trap": "2.1.2 A", "Lost focus": "2.4.3 A", "Hidden focus": "2.4.11 AA", "No focus style": "2.4.7 AA" };
 function showUrl(f) { return "https://matjazkorosec.com/tools/tab-trail#show-" + f.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
 function ranChecks() {
   var out = [];
@@ -1600,6 +1667,7 @@ function verifyOf(e) {
   if (e.f === "Forced order") return "Reload the page and run Tab trail again: " + el("Element") + " has no tabindex above 0, its stop number matches its place on the page, and the Forced order count goes down by 1.";
   if (e.f === "Hover menus") return "Press Tab until a link inside " + el("Element") + " has focus: the menu opens while focus is inside it, and Tab trail no longer lists it under hover menus.";
   if (e.f === "Hidden focus") return "Press Tab until " + el("Element") + " has focus: part of it shows next to " + el("Covered by") + ", and its Hidden focus line in the log says in view or partly covered.";
+  if (e.f === "No focus style") return "Press Tab until " + el("Element") + " has focus: an outline or another visible change shows on it, and its No focus style line in the log says OK.";
   if (e.f === "Keyboard trap") return "Put focus on " + el("Element") + " and press Tab: focus moves on to " + el("Expected next") + ", and the log shows an OK Out of order line.";
   if (e.f === "Lost focus") return "Open the popup from " + el("Opened by") + " with Enter, then close it with Escape or its close button: focus is back on " + el("Opened by") + ", and the log shows an OK Lost focus line.";
   if (el("Popup")) return "Reload so the popup shows, then press Tab once: focus lands inside " + el("Popup") + ".";
@@ -1614,7 +1682,7 @@ function coverage() {
   var pops = logs.filter(function (e) { return e.f === "Lost focus"; }).length;
   out.push("Lost focus: " + (pops ? "only " + pl(pops, "popup was", "popups were") : "no popups were") + " opened and closed in this run. Open and close every popup, menu and dialog on the page to check them all.");
   out.push("Window size: everything was tested at " + innerWidth + " x " + innerHeight + " only. Sticky bars, menus and popups can behave differently on phones; run it again in a window about 390 px wide.");
-  out.push("Not checked by Tab trail at all: whether the focus outline is visible and has enough contrast, accessible names of buttons and links, color contrast of text, what a screen reader announces, and content inside iframes. Use axe DevTools or Lighthouse for names, contrast and iframes. Check focus visibility with Spotlight and screen reader output with VoiceOver or NVDA.");
+  out.push("Not checked by Tab trail at all: how strong the focus change is (contrast, size: AAA), accessible names of buttons and links, color contrast of text, what a screen reader announces, and content inside iframes. Use axe DevTools or Lighthouse for names, contrast and iframes. Check focus visibility with Spotlight and screen reader output with VoiceOver or NVDA.");
   return out;
 }
 var probLog = [], ignore = [], CAP = 200, judgedDir = {};
@@ -2185,7 +2253,7 @@ function draw() {
   if (win > last) win = last;
   var lo = paged() ? win * PAGE : 0, hi = paged() ? Math.min(lo + PAGE, stops.length) : stops.length;
   var red = [], at = [];
-  missed.concat(hovers).forEach(function (m) {
+  missed.concat(hovers, noRing).forEach(function (m) {
     var p = isPinned(m);
     if (p || page) red.push([m, m.getBoundingClientRect(), p]);
   });
@@ -2294,6 +2362,9 @@ function rescan() {
   place();
   pinned = new WeakMap();
   scan();
+  var fa = deep();
+  noOutline = null;
+  stops.forEach(function (x) { if (x !== fa && !restSig.has(x)) rest(x); });
   if (!same(drawn, sig())) {
     fill();
     scan();
@@ -2404,6 +2475,7 @@ function step(s) {
     return;
   }
   endPress();
+  if (s !== deep()) rest(s);
   s.focus({ focusVisible: true });
   focus();
   walked.add(s);
@@ -2689,6 +2761,7 @@ function key(e) {
       var c = stops[(((before + pressed * k) % n) + n) % n];
       if (tabbable(c)) {
         wantEl = c;
+        if (c !== fa) rest(c);
         break;
       }
     }
@@ -2704,6 +2777,7 @@ function pick(e) {
   var s = stops[+g.getAttribute("data-i")];
   if (!s) return;
   endPress();
+  if (s !== deep()) rest(s);
   s.focus({ preventScroll: true, focusVisible: true });
   focus();
 }

@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="style.css">
+<title>No focus style</title>
+<style>
+:focus { outline: none; }
+#color:focus { color: #b00; }
+.ring { display: inline-block; border-radius: 999px; }
+.ring:focus-within { box-shadow: 0 0 0 3px #c2410c; }
+p { margin: 0 0 16px; }
+#vis:focus-visible { outline: 2px solid #c2410c; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.sr:focus + .box { box-shadow: 0 0 0 3px #c2410c; }
+.box { display: inline-block; width: 18px; height: 18px; border: 1px solid #2a2420; }
+.card:focus .in { outline: 2px solid #c2410c; }
+.card .in { display: block; padding: 8px; }
+#hov { text-decoration: none; }
+#hov:hover, #hov:focus { text-decoration: underline; }
+</style>
+</head>
+<body>
+<main>
+<h1>No focus style</h1>
+<p><a id="bare" href="#a">Bare</a></p>
+<p><a id="color" href="#b">Color</a></p>
+<div class="ring"><button id="inner" type="button">Inner</button></div>
+<p><a id="vis" href="#c">Visible</a></p>
+<p><label><input class="sr" id="check" type="checkbox"><span class="box"></span> Check</label></p>
+<p><a class="card" id="card" href="#d"><span class="in">Card</span></a></p>
+<p><a id="hov" href="#e">Hover</a></p>
+<p id="shade"></p>
+<script>
+var sh = document.getElementById("shade").attachShadow({ mode: "open" });
+sh.innerHTML = "<style>:host { display: inline-block; } :host(:focus-within) { box-shadow: 0 0 0 3px #c2410c; } button:focus { outline: none; }</style><button id=\"deep\" type=\"button\">Deep</button>";
+</script>
+</main>
+</body>
+</html>

@@ -30,6 +30,24 @@ for (const [file, check] of [
   });
 }
 
+test("No focus style", async ({ page }) => {
+  await open(page, "no-focus-style.html");
+  await page.evaluate(() => window.__tabTrail.play({ delay: 50 }));
+  const probs = await page.evaluate(() => window.__tabTrail.problems());
+  expect(await checks(page)).toEqual(["No focus style"]);
+  expect(probs.map((p) => p.selector)).toEqual(["#bare"]);
+  expect(probs[0].wcag).toBe("2.4.7 AA");
+});
+
+test("No focus style skips a stop under the mouse", async ({ page }) => {
+  await open(page, "no-focus-style.html");
+  const r = await page.locator("#hov").boundingBox();
+  await page.mouse.move(r!.x + 5, r!.y + 5);
+  await page.evaluate(() => window.__tabTrail.play({ delay: 50 }));
+  const probs = await page.evaluate(() => window.__tabTrail.problems());
+  expect(probs.map((p) => p.selector)).toEqual(["#bare"]);
+});
+
 test("Out of order", async ({ page }) => {
   await open(page, "out-of-order.html");
   await page.focus("#first");
