@@ -11,6 +11,8 @@ declare global {
       log(): Line[];
       state(): { walked: number; total: number; done: boolean; untested: string[] };
       regions(): { header: number; nav: number; main: number; aside: number; footer: number; other: number };
+      cost(): { name: string; presses: number; how: string; selector: string }[];
+      cost(selector: string): number | null;
       close(): void;
     };
   }
