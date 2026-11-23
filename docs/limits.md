@@ -7,6 +7,6 @@ Generated from data/. Edit the files in data/, then run `npm run docs`.
 - A loop that Tab never leaves, but Shift+Tab does, shows as Out of order, not Keyboard trap.
 - It doesn't compare Tab order with the order you see. If CSS moves things around, follow the numbers and check it yourself.
 - Play moves focus in Tab order without pressing the key, so code that listens for the Tab key only runs when you press Tab.
-- It doesn't check the focus ring's look or contrast (it only flags links that stay invisible while they have focus), or what a screen reader says. Use Spotlight to look for yourself, and VoiceOver or NVDA to listen. Pages inside frames and web components with closed shadow roots are skipped.
+- It checks that something changes when a stop gets focus, not how strong the change is (that is AAA), or what a screen reader says. Use Spotlight to look for yourself, and VoiceOver or NVDA to listen. Pages inside frames and web components with closed shadow roots are skipped.
 - Style sheets loaded from other sites without CORS can't be read, so hover menus styled there are not checked.
 - It's made for Chrome, Edge, Firefox and Safari on a desktop computer. On a Mac, turn on Tab for links first, and Firefox needs the console.

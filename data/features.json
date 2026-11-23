@@ -68,6 +68,41 @@
       "long": "Each time Tab jumps out of order, the panel lists the jump in red. A popup that blocks the page must get Tab first, or it is flagged too."
     },
     {
+      "group": "red",
+      "wcag": "2.4.7 AA",
+      "title": "No focus style",
+      "short": "\"2 stops show no focus when Tab is on them.\"",
+      "long": "Tab trail compares how a stop looks before and after it gets focus: its outline, shadow, border, colors, underline, its ::before and ::after, and its parent, sibling, label and first child, so a ring drawn around it counts. Nothing changed means keyboard users can't see where they are. Copy for AI names the CSS rule that removes the outline."
+    },
+    {
+      "group": "red",
+      "wcag": "2.4.7 AA, 4.1.2 A",
+      "title": "Ghost stop",
+      "short": "\"7 stops you can't see when Tab is on them.\"",
+      "long": "Tab lands on something nobody can see: off screen, no size, transparent, or inside aria-hidden. Off-screen stops, like a closed phone menu, become 1 red strip at the edge they hide behind, with the range. A slide or menu that moves in on focus passes."
+    },
+    {
+      "group": "red",
+      "wcag": "2.4.1 A",
+      "title": "Broken skip link",
+      "short": "\"1 skip link goes nowhere.\"",
+      "long": "A skip link among the first stops points at an id that is missing or hidden, so Enter does nothing. A red line runs to an X where the target should be. With no skip link and 15 or more stops before the main content, that is listed too."
+    },
+    {
+      "group": "red",
+      "wcag": "2.1.2 A",
+      "title": "No way out",
+      "short": "\"1 popup has no keyboard way out.\"",
+      "long": "Tab goes round and round inside a popup, and none of its stops closes it. Tab trail never presses keys itself, so it judges your own Tab presses. A native dialog opened with showModal() is never red, because Escape closes it."
+    },
+    {
+      "group": "red",
+      "wcag": "4.1.2 A",
+      "title": "Nameless stop",
+      "short": "\"3 stops have no name for screen readers.\"",
+      "long": "An icon button or image link with no text, no aria-label and no alt makes a screen reader say only \"button\" or \"link\". Hover any dot to see the name Tab trail found: \"3 · button · no name\"."
+    },
+    {
       "group": "read",
       "title": "Tab order",
       "short": "Numbers show where Tab goes. The orange one is where you are.",
@@ -113,7 +148,7 @@
       "group": "work",
       "title": "Play it",
       "short": "No Tab key? Press Play, it walks every stop.",
-      "long": "Play moves focus through every stop for you and checks each one, then 1 line sums up all 7 checks. It only moves focus, it never clicks."
+      "long": "Play moves focus through every stop for you and checks each one, then 1 line sums up all 12 checks. It only moves focus, it never clicks."
     },
     {
       "group": "work",
@@ -150,6 +185,18 @@
       "title": "Spotlight",
       "short": "Dim the page, light up where Tab is.",
       "long": "Open Settings and tick Spotlight: the page goes dark except what Tab is on, so you follow it the way a keyboard user does. A missing focus ring is easy to spot, even for someone watching."
+    },
+    {
+      "group": "settings",
+      "title": "Tab cost",
+      "short": "How many Tab presses to the goal?",
+      "long": "Lists up to 3 goals with the Tab presses it takes to reach them: the main content, buttons like Add to cart or Subscribe, and anything marked data-tab-trail-goal=\"Name\". Pick a goal lets you click any stop to add it. Each goal gets an orange ring and its number on the page."
+    },
+    {
+      "group": "settings",
+      "title": "Region map",
+      "short": "Where do the Tab presses go?",
+      "long": "Counts the stops in the header, navigation, main content, sidebar and footer, as 1 bar. Click a part to tint that region on the page. It shows at a glance when the content is buried behind the menus."
     },
     {
       "group": "settings",

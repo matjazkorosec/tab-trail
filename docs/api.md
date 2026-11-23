@@ -22,6 +22,14 @@ Every Log line as data: time, result, check, wcag, text, fixed, selector, stop.
 
 { walked, total, done, untested }. done is true once Play reached the end. untested names the checks that never ran, like Lost focus when no popup was opened, so a green test can tell a clean page from a check that was skipped.
 
+### `window.__tabTrail.cost(selector)`
+
+With a CSS selector, the Tab presses from the top of the page to that element, or null if Tab never reaches it. Without one, the goals Tab cost finds: name, presses, how it was found, selector.
+
+### `window.__tabTrail.regions()`
+
+How many stops sit in each region: { header, nav, main, aside, footer, other }.
+
 ### `window.__tabTrail.version`
 
 "1.0.0"
