@@ -153,8 +153,8 @@
     {
       "group": "work",
       "title": "Check all",
-      "short": "A second bookmark that checks every stop on open.",
-      "long": "Check all is the same tool as a second bookmark. Click it and it walks every stop on its own, then puts the page back where it was, so every red mark is on screen at once, ready for a screenshot. Out of order, Keyboard trap, Lost focus and No way out still need your own Tab presses and popups."
+      "short": "Every red mark at once, from the console.",
+      "long": "With Tab trail open, run window.__tabTrail.play({ quiet: true }) in the console. It walks every stop on its own, then puts the page back where it was, so every red mark is on screen at once, ready for a screenshot. Out of order, Keyboard trap, Lost focus and No way out still need your own Tab presses and popups."
     },
     {
       "group": "work",

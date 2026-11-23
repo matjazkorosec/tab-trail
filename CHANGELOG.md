@@ -2,8 +2,12 @@
 
 ## Unreleased
 
+## 1.2.0 (2026-11-23)
+
+Every red mark at once with play({ quiet: true }), and steadier No focus style results.
+
 - Fix: No focus style ignores looping CSS animations, so repeated Play runs give the same count.
-- New: Check all, a second bookmark that checks every stop on open and puts the page back, and play({ quiet: true }).
+- New: play({ quiet: true }) walks every stop, then puts scroll and focus back, so every red mark is on screen at once. With Tab trail open, run window.__tabTrail.play({ quiet: true }) in the console.
 
 ## 1.1.0 (2026-11-23)
 
