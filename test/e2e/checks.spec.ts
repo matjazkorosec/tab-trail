@@ -67,6 +67,20 @@ test("No focus style ignores a stop Tab already left", async ({ page }) => {
   expect(probs.map((p) => p.selector)).not.toContain("#color");
 });
 
+test("No focus style skips stops while the browser window is in the background", async ({ page }) => {
+  await open(page, "no-focus-style.html");
+  await page.evaluate(() => { document.hasFocus = () => false; });
+  await page.evaluate(() => window.__tabTrail.play({ delay: 50 }));
+  const probs = await page.evaluate(() => window.__tabTrail.problems());
+  expect(probs.filter((p) => p.check === "No focus style")).toEqual([]);
+  const skipped = await page.evaluate(() => window.__tabTrail.log().filter((e) => e.check === "No focus style" && e.result === "SKIPPED").map((e) => e.text));
+  expect(skipped.join(" ")).toContain("in the background");
+  await page.evaluate(() => { delete (document as { hasFocus?: unknown }).hasFocus; });
+  await page.evaluate(() => window.__tabTrail.play({ delay: 50 }));
+  const again = await page.evaluate(() => window.__tabTrail.problems());
+  expect(again.filter((p) => p.check === "No focus style").map((p) => p.selector)).toEqual(["#bare"]);
+});
+
 test("Ghost stop", async ({ page }) => {
   await open(page, "ghost-stop.html");
   await page.evaluate(() => window.__tabTrail.play({ delay: 50 }));

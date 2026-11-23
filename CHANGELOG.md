@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Fix: No focus style skips stops while the browser window is in the background, instead of marking them red.
+
 ## 1.2.0 (2026-11-23)
 
 Every red mark at once with play({ quiet: true }), and steadier No focus style results.
