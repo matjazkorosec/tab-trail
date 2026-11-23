@@ -1048,7 +1048,8 @@ function check(s, then) {
       still = 0;
     } else still++;
     if (still < 2 && ++tries < 90) return requestAnimationFrame(look);
-    if (!late && ghostWhy(s)) {
+    var on = deep() === s;
+    if (on && !late && ghostWhy(s)) {
       late = 1;
       return setTimeout(function () {
         if (closed) return end();
@@ -1061,7 +1062,7 @@ function check(s, then) {
       }, 400);
     }
     nameOne(s);
-    if (!ghostCheck(s)) ringCheck(s);
+    if (on && !ghostCheck(s)) ringCheck(s);
     tested(s);
     hidTested.add(s);
     if (ghosts.indexOf(s) >= 0) return end();

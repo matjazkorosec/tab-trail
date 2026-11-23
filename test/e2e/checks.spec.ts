@@ -48,6 +48,16 @@ test("No focus style skips a stop under the mouse", async ({ page }) => {
   expect(probs.map((p) => p.selector)).toEqual(["#bare"]);
 });
 
+test("No focus style ignores a stop Tab already left", async ({ page }) => {
+  await open(page, "no-focus-style.html");
+  await page.focus("#bare");
+  await page.keyboard.press("Tab");
+  await page.keyboard.press("Tab");
+  await page.waitForTimeout(800);
+  const probs = await page.evaluate(() => window.__tabTrail.problems());
+  expect(probs.map((p) => p.selector)).not.toContain("#color");
+});
+
 test("Ghost stop", async ({ page }) => {
   await open(page, "ghost-stop.html");
   await page.evaluate(() => window.__tabTrail.play({ delay: 50 }));
