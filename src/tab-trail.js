@@ -398,6 +398,7 @@ style.textContent = [
   ".p.g{cursor:grabbing;user-select:none}",
   ".n b.e{color:#d0103a}",
   ".n b.ok{color:#1f7a3f}",
+  "button.lq{all:unset;cursor:pointer;color:#1e3a8a;font-weight:700}.cg{color:#5f564c}.pk{color:#c2410c}",
   ".bar{display:flex;gap:2px;height:24px;margin:6px 0 2px}.bar button{border:0;padding:0;min-width:6px;border-radius:4px;cursor:pointer}.bar button:focus-visible{outline:2px solid #1a1612;outline-offset:2px}.bl{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:13px;margin:4px 0 8px}.bl em{width:10px;height:10px;border-radius:3px;display:inline-block;margin-right:5px}",
   ".s{cursor:pointer}",
   "svg.in{z-index:1}",
@@ -705,11 +706,12 @@ function fill() {
     count(forcedBad.length, forcedBad.length === 1 ? " stop has tabindex above 0, which pulls it ahead of the page" : " stops have tabindex above 0, which pulls them ahead of the page", true);
     chipList(forcedBad, true);
   }
+  costDraw();
   mapDraw();
   if (skip) skipPanel();
   if (had >= 0 && chips.length) chips[Math.min(had, chips.length - 1)].focus();
 }
-function sig() { return [stops.length, mapOn && mapOn.checked && JSON.stringify(regions()[0])].concat(missed, ["|"], hovers, ["|"], forced, ["|"], forcedBad); }
+function sig() { return [stops.length, mapOn && mapOn.checked && JSON.stringify(regions()[0]), costOn && costOn.checked && goals().map(function (g) { return g.presses + g.name; }).join()].concat(missed, ["|"], hovers, ["|"], forced, ["|"], forcedBad); }
 function chipList(list, num) {
   var made = chipUl(info, list, function (m) { return (num && stops.indexOf(m) >= 0 ? stops.indexOf(m) + 1 + ": " : "") + label(m); }, function (m, c) {
     shownEl = m;
@@ -744,6 +746,8 @@ var prevBtn = pageBtn("Previous", -1), nextBtn = pageBtn("Next", 1);
 var group = document.createElement("div");
 group.className = "cd gp";
 group.appendChild(pager);
+var costBox = document.createElement("div");
+resCard.appendChild(costBox);
 var mapBox = document.createElement("div");
 resCard.appendChild(mapBox);
 var jumpBox = document.createElement("div");
@@ -1207,6 +1211,7 @@ function loopCheck(p, from, to, d) {
   renderJumps();
 }
 function tap(e) {
+  if (picking) return;
   tapIn = e.composedPath ? e.composedPath()[0] : e.target;
   tapT = Date.now();
 }
@@ -1367,6 +1372,116 @@ mapOn.type = "checkbox";
 mapLabel.appendChild(mapOn);
 mapLabel.appendChild(document.createTextNode("Region map"));
 settings.insertBefore(mapLabel, spotBox.nextSibling);
+var costLabel = document.createElement("label");
+costLabel.className = "k s";
+var costOn = document.createElement("input");
+costOn.type = "checkbox";
+costLabel.appendChild(costOn);
+costLabel.appendChild(document.createTextNode("Tab cost"));
+settings.insertBefore(costLabel, mapLabel);
+costOn.addEventListener("change", function () {
+  if (!costOn.checked) endPick();
+  costDraw();
+  queue();
+});
+var picked = null, picking = false, pickAt = null, costGoals = [], PICKS = ["pointermove", "pointerdown", "mousedown", "pointerup", "mouseup", "click", "auxclick", "dblclick", "contextmenu"], GOALW = /(^|[^a-z\u010d\u0161\u017e])(add to cart|buy|checkout|book|reserve|subscribe|sign up|register|download|contact|get started|donate|v ko\u0161arico|kupi|naro\u010di|rezerviraj|prijava|naro\u010di se|prenesi|kontakt)(?![a-z\u010d\u0161\u017e])/i;
+function mainStop() {
+  var m = mainRegion();
+  return m ? stops.filter(function (x) { return within(m, x); })[0] || null : null;
+}
+function goals() {
+  var out = [], m = mainRegion(), found = 0;
+  function add(e, name, how) {
+    if (e && !out.some(function (g) { return g.el === e || (name && g.name.toLowerCase() === name.toLowerCase()); })) out.push({ name: name, presses: stops.indexOf(e) + 1, how: how, el: e });
+  }
+  [].forEach.call(document.querySelectorAll("[data-tab-trail-goal]"), function (x) {
+    found = 1;
+    add(stops.indexOf(x) >= 0 ? x : stops.filter(function (y) { return within(x, y); })[0], x.getAttribute("data-tab-trail-goal"), "set in the page");
+  });
+  add(mainStop(), "the main content", "always");
+  stops.forEach(function (e) {
+    if (!GOALW.test(accName(e))) return;
+    found = 1;
+    add(e, label(e), "found by its words");
+  });
+  stops.forEach(function (e) {
+    if (!e.form || !e.form.querySelector("input[type=email]") || !e.matches("button:not([type]),[type=submit]")) return;
+    found = 1;
+    add(e, label(e), "form with an e-mail field");
+  });
+  if (!found && m) add(stops.filter(function (x) { return x.tagName === "BUTTON" && within(m, x); }).sort(function (a, b) { var p = a.getBoundingClientRect(), q = b.getBoundingClientRect(); return q.width * q.height - p.width * p.height; })[0], "", "guessed");
+  out.forEach(function (g) { if (!g.name) g.name = label(g.el); });
+  var mg = out.filter(function (g) { return g.how === "always"; })[0], rest = out.filter(function (g) { return g !== mg; });
+  out = out.filter(function (g) { return g === mg || rest.indexOf(g) < (mg ? 2 : 3); });
+  if (picked && stops.indexOf(picked) >= 0) {
+    out = out.filter(function (g) { return g.el !== picked; });
+    out.unshift({ name: label(picked), presses: stops.indexOf(picked) + 1, how: "picked by you", el: picked });
+  }
+  return out;
+}
+function para(parent, cls, text) {
+  var p = document.createElement("p");
+  p.className = cls;
+  p.textContent = text || "";
+  parent.appendChild(p);
+  return p;
+}
+function costDraw() {
+  if (!costOn) return;
+  while (costBox.firstChild) costBox.removeChild(costBox.firstChild);
+  costGoals = costOn.checked ? goals() : [];
+  if (!costOn.checked) return;
+  para(costBox, "", "").appendChild(document.createElement("b")).textContent = "Tab presses to reach";
+  costGoals.forEach(function (g) {
+    var p = para(costBox, "n", "");
+    p.appendChild(document.createElement("b")).textContent = String(g.presses);
+    p.appendChild(document.createTextNode(" " + g.name + " "));
+    p.appendChild(document.createElement("span")).textContent = "\u00b7 " + g.how;
+    p.lastChild.className = "cg";
+    if (g.el === picked) lbtn("lq", " Remove", p).addEventListener("click", function () {
+      picked = null;
+      costDraw();
+      queue();
+      costBox.querySelector("p:last-child button").focus();
+    });
+  });
+  var ms = mainStop();
+  if (ms && !skipLink() && stops.indexOf(ms) >= 10) para(costBox, "cg", "A skip link would make the main content 1.");
+  var pl2 = para(costBox, picking ? "pk" : "", picking ? "Click the goal on the page. Escape cancels. " : "");
+  lbtn("lq", picking ? "Cancel" : "Pick a goal", pl2).addEventListener("click", function () {
+    if (picking) endPick();
+    else {
+      picking = true;
+      PICKS.forEach(function (t) { addEventListener(t, pickEv, true); });
+    }
+    costDraw();
+    costBox.querySelector("p:last-child button").focus();
+  });
+  skipPanel();
+}
+function endPick() {
+  picking = false;
+  pickAt = null;
+  PICKS.forEach(function (t) { removeEventListener(t, pickEv, true); });
+  costDraw();
+  queue();
+}
+function pickEv(e) {
+  var t = e.composedPath ? e.composedPath()[0] : e.target, s = null;
+  if (!picking || within(host, t)) return;
+  e.preventDefault();
+  e.stopPropagation();
+  for (var n = t; n && !s; n = upOf(n)) if (stops.indexOf(n) >= 0) s = n;
+  if (e.type === "pointermove") {
+    if (s !== pickAt) {
+      pickAt = s;
+      queue();
+    }
+  } else if (e.type === "click" && s) {
+    picked = s;
+    endPick();
+  }
+}
 mapOn.addEventListener("change", function () {
   tint = null;
   mapDraw();
@@ -2550,6 +2665,13 @@ function draw() {
     var t = el("text", { x: 0, y: 0, transform: "translate(" + (x + w / 2) + " " + (y + h / 2) + ")" + (v ? " rotate(-90)" : ""), fill: "#d0103a", stroke: "#fff", "stroke-width": 3, "paint-order": "stroke", "font-size": 11, "font-weight": 700, "font-family": "system-ui,sans-serif", "text-anchor": "middle", "dominant-baseline": "middle" }, under);
     t.textContent = runs(edges[ed]).map(span).join(", ");
   });
+  costGoals.concat(pickAt ? [{ el: pickAt, pick: 1 }] : []).forEach(function (g) {
+    if (!g.el.isConnected) return;
+    var q = g.el.getBoundingClientRect(), t = g.pick ? "Click to make " + label(g.el) + " a goal" : g.name + ": " + g.presses;
+    el("rect", { x: q.left - 4, y: q.top - 4, width: q.width + 8, height: q.height + 8, fill: "none", stroke: "#c2410c", "stroke-width": 3, "stroke-dasharray": g.pick ? "7 5" : "", rx: 6 }, under);
+    el("rect", { x: q.right + 10, y: q.top + q.height / 2 - 11, width: t.length * 6.6 + 16, height: 22, fill: "#c2410c", rx: 11 }, under);
+    el("text", { x: q.right + 18, y: q.top + q.height / 2 + 4, fill: "#fff", "font-size": 12, "font-weight": 700, "font-family": "system-ui,sans-serif" }, under).textContent = t;
+  });
   if (tint && mapOn.checked) tint[0].filter(function (m) { return m.isConnected; }).forEach(function (m) {
     var q = m.getBoundingClientRect();
     el("rect", { x: q.left, y: q.top, width: q.width, height: q.height, fill: tint[1], "fill-opacity": 0.12, stroke: tint[1], "stroke-width": 2, rx: 4 }, under);
@@ -2829,6 +2951,7 @@ play.addEventListener("click", function () {
   startWalk();
 });
 function interrupt(e) {
+  if (picking) return;
   if (!walking || (e.composedPath && e.composedPath().indexOf(host) >= 0)) return;
   stopWalk("Paused by a click on the page" + walkedText());
 }
@@ -3001,6 +3124,11 @@ function back() {
   }
 }
 function key(e) {
+  if (picking && e.key === "Escape" && e.isTrusted) {
+    e.preventDefault();
+    e.stopPropagation();
+    return endPick();
+  }
   if (e.code === "KeyF" && e.ctrlKey && e.shiftKey && !e.altKey && !e.metaKey) {
     e.preventDefault();
     e.stopPropagation();
@@ -3068,6 +3196,8 @@ function pick(e) {
 }
 function close() {
   closed = true;
+  picking = false;
+  PICKS.forEach(function (t) { removeEventListener(t, pickEv, true); });
   stopWalk();
   removeEventListener("pointerdown", interrupt, true);
   removeEventListener("pointerdown", tap, true);
@@ -3159,6 +3289,13 @@ var api = {
   problems: function () { return problemsOf(openProbs()); },
   state: function () { return { walked: walkedN(), total: stops.length, done: !walking && walkEnd === "done" && stops.every(function (x) { return hidTested.has(x); }), untested: untested() }; },
   regions: function () { return regions()[0]; },
+  cost: function (q) {
+    if (q) {
+      var e = document.querySelector(q);
+      return e && stops.indexOf(e) >= 0 ? stops.indexOf(e) + 1 : null;
+    }
+    return goals().map(function (g) { return { name: g.name, presses: g.presses, how: g.how, selector: sel(g.el) }; });
+  },
   version: VERSION,
   close: function () { close(); }
 };

@@ -45,3 +45,80 @@ test("Region map shows only when its setting is on", async ({ page }) => {
   await expect(bar).toHaveCount(1);
   await expect(page.locator("#tab-trail-host .bl")).toHaveText(/Header 3.*Nav 4.*Main 4.*Aside 1.*Footer 3/);
 });
+
+test("cost() lists the goals and their Tab presses", async ({ page }) => {
+  await open(page, "tab-cost.html");
+  const goals = await page.evaluate(() => window.__tabTrail.cost());
+  expect(goals.map((g) => [g.name, g.presses, g.how])).toEqual([
+    ["Newsletter", 13, "set in the page"],
+    ["the main content", 9, "always"],
+    ["Add to cart", 10, "found by its words"],
+  ]);
+  expect(await page.evaluate(() => window.__tabTrail.cost("button"))).toBe(10);
+});
+
+test("Tab cost shows only when its setting is on, and a goal can be picked", async ({ page }) => {
+  await open(page, "tab-cost.html");
+  const block = page.locator("#tab-trail-host", { hasText: "Tab presses to reach" });
+  await expect(block).toHaveCount(0);
+  await page.locator("#tab-trail-host button.sg", { hasText: "Settings" }).click();
+  await page.locator("#tab-trail-host label", { hasText: "Tab cost" }).click();
+  await expect(block).toHaveCount(1);
+  const url = page.url();
+  await page.locator("#tab-trail-host button", { hasText: "Pick a goal" }).click();
+  await page.click("text=Menu 3");
+  expect(page.url()).toBe(url);
+  const goals = await page.evaluate(() => window.__tabTrail.cost());
+  expect([goals[0].name, goals[0].presses, goals[0].how]).toEqual(["Menu 3", 3, "picked by you"]);
+});
+
+test.describe("Tab cost pick mode", () => {
+  async function pick(page) {
+    await open(page, "tab-cost.html");
+    await page.locator("#tab-trail-host button.sg", { hasText: "Settings" }).click();
+    await page.locator("#tab-trail-host label", { hasText: "Tab cost" }).click();
+    await page.locator("#tab-trail-host button", { hasText: "Pick a goal" }).click();
+  }
+
+  test("closing Tab trail while picking gives clicks back", async ({ page }) => {
+    await pick(page);
+    await page.evaluate(() => window.__tabTrail.close());
+    await page.click("text=Menu 3");
+    expect(page.url()).toMatch(/#h3$/);
+  });
+
+  test("Enter on a page link does nothing while picking", async ({ page }) => {
+    await pick(page);
+    const url = page.url();
+    await page.focus("text=Menu 2");
+    await page.keyboard.press("Enter");
+    expect(page.url()).toBe(url);
+  });
+
+  test("the pick click does not pause Play", async ({ page }) => {
+    await pick(page);
+    await page.evaluate(() => { window.__tabTrail.play({ delay: 300 }); });
+    await page.click("text=Menu 3");
+    const lines = await page.evaluate(() => window.__tabTrail.log());
+    expect(lines.some((l) => l.text.includes("Paused by a click"))).toBe(false);
+  });
+
+  test("Pick a goal keeps keyboard focus on the panel", async ({ page }) => {
+    await pick(page);
+    const name = await page.evaluate(() => (document.getElementById("tab-trail-host")!.shadowRoot!.activeElement || {}).textContent);
+    expect(name).toBe("Cancel");
+  });
+});
+
+test("Tab cost always lists the main content, and follows page changes", async ({ page }) => {
+  await open(page, "tab-cost.html");
+  await page.evaluate(() => document.querySelectorAll("nav a").forEach((a, i) => i < 3 && a.setAttribute("data-tab-trail-goal", "Goal " + i)));
+  const names = (await page.evaluate(() => window.__tabTrail.cost())).map((g) => g.name);
+  expect(names).toHaveLength(3);
+  expect(names).toContain("the main content");
+  await page.locator("#tab-trail-host button.sg", { hasText: "Settings" }).click();
+  await page.locator("#tab-trail-host label", { hasText: "Tab cost" }).click();
+  await page.evaluate(() => document.querySelectorAll("nav a").forEach((a) => a.removeAttribute("data-tab-trail-goal")));
+  await page.evaluate(() => { document.querySelector("main button")!.textContent = "Our offers"; });
+  await expect(page.locator("#tab-trail-host", { hasText: "Add to cart" })).toHaveCount(0);
+});
