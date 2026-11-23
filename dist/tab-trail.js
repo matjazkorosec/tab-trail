@@ -1028,6 +1028,7 @@ function span(g) {
 function ringCheck(s) {
   var was = noRing.indexOf(s) >= 0, before = restSig.get(s);
   if (!before) return log("SKIPPED", "No focus style", [ref(s), " has no style from before focus yet, or the mouse was on it. Judged on the next visit."]);
+  if (!document.hasFocus()) return log("SKIPPED", "No focus style", [ref(s), " was not judged: the browser window was in the background, so the page shows no focus. Judged on the next visit."]);
   if (before !== focusSig(s)) {
     if (!was) return log("OK", "No focus style", [ref(s), " changes when Tab is on it."]);
     noRing.splice(noRing.indexOf(s), 1);
