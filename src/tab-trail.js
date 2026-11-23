@@ -848,15 +848,30 @@ function where(s) {
 }
 var restSig = new WeakMap(), noRing = [], probRing = new Map(), SIG = ["outline-style", "outline-width", "outline-color", "box-shadow", "background-color", "background-image", "color", "text-decoration-line", "text-decoration-color", "opacity", "transform", "filter"];
 function upOf(e) { return e && (e.parentElement || (e.parentNode && e.parentNode.host)); }
+function moving(el, pseudo) {
+  var out = [];
+  if (!el.getAnimations) return out;
+  try {
+    el.getAnimations({ subtree: !!pseudo }).forEach(function (a) {
+      var fx = a.effect;
+      if (!a.animationName || a.playState !== "running" || !fx || fx.target !== el || (fx.pseudoElement || null) !== (pseudo || null)) return;
+      fx.getKeyframes().forEach(function (k) {
+        for (var p in k) if (["offset", "computedOffset", "easing", "composite"].indexOf(p) < 0) out.push(p.replace(/[A-Z]/g, function (m) { return "-" + m.toLowerCase(); }));
+      });
+    });
+  } catch (x) {}
+  return out;
+}
 function focusSig(e) {
   var out = [], up = upOf(e);
   [[e], [e, "::before"], [e, "::after"], [up], [upOf(up)], [e.nextElementSibling], [e.firstElementChild], [e.labels && e.labels[0]]].forEach(function (x) {
     if (!x[0]) return;
-    var c = getComputedStyle(x[0], x[1] || null), o = c.outlineStyle !== "none" && c.outlineWidth !== "0px";
-    SIG.forEach(function (k) { if (o || k.indexOf("outline") < 0) out.push(c.getPropertyValue(k)); });
+    var c = getComputedStyle(x[0], x[1] || null), o = c.outlineStyle !== "none" && c.outlineWidth !== "0px", m = moving(x[0], x[1]);
+    var val = function (k) { return m.some(function (p) { return k.indexOf(p) === 0 || p.indexOf(k) === 0; }) ? "~" : c.getPropertyValue(k); };
+    SIG.forEach(function (k) { if (o || k.indexOf("outline") < 0) out.push(val(k)); });
     ["top", "right", "bottom", "left"].forEach(function (d) {
-      var w = c.getPropertyValue("border-" + d + "-width");
-      out.push(w, w === "0px" ? "" : c.getPropertyValue("border-" + d + "-color"));
+      var w = val("border-" + d + "-width");
+      out.push(w, w === "0px" ? "" : val("border-" + d + "-color"));
     });
   });
   return out.join("|");

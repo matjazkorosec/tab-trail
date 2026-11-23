@@ -39,6 +39,15 @@ test("No focus style", async ({ page }) => {
   expect(probs[0].wcag).toBe("2.4.7 AA");
 });
 
+test("No focus style judges animated stops the same on every run", async ({ page }) => {
+  await open(page, "animated-focus.html");
+  for (const delay of [50, 137, 263, 50]) {
+    await page.evaluate((d) => window.__tabTrail.play({ delay: d }), delay);
+    const problems = await page.evaluate(() => window.__tabTrail.problems());
+    expect(problems.filter((p) => p.check === "No focus style").map((p) => p.selector).sort()).toEqual(["#bare", "#tint"]);
+  }
+});
+
 test("No focus style skips a stop under the mouse", async ({ page }) => {
   await open(page, "no-focus-style.html");
   const r = await page.locator("#hov").boundingBox();
