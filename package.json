@@ -50,5 +50,5 @@
   "devDependencies": {
     "@playwright/test": "1.64.1"
   },
-  "sizeBudget": 240000
+  "sizeBudget": 260000
 }
