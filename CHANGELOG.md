@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 1.2.0 (2026-11-23)
+
+Check all, a bookmark that shows every red mark at once, and steadier No focus style results.
+
 - Fix: No focus style ignores looping CSS animations, so repeated Play runs give the same count.
 - New: Check all, a second bookmark that checks every stop on open and puts the page back, and play({ quiet: true }).
 
