@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="style.css">
+<title>No way out</title>
+<style>
+#pop { position: fixed; top: 80px; left: 56px; width: 420px; }
+</style>
+</head>
+<body>
+<main>
+<h1>No way out</h1>
+<div id="pop" role="dialog" aria-modal="true" aria-label="Get 10% off">
+<p>Get 10% off your first order.</p>
+<label>Name <input id="name" type="text"></label>
+<label>Email <input type="email"></label>
+<button id="go" type="submit">Send</button>
+</div>
+</main>
+<script>
+var pop = document.getElementById("pop");
+pop.addEventListener("keydown", function (e) {
+  if (e.key !== "Tab") return;
+  var l = pop.querySelectorAll("input, button"), first = l[0], last = l[l.length - 1];
+  if (!e.shiftKey && e.target === last) { e.preventDefault(); first.focus(); }
+  if (e.shiftKey && e.target === first) { e.preventDefault(); last.focus(); }
+});
+document.getElementById("name").focus();
+</script>
+</body>
+</html>

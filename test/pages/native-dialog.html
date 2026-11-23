@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="style.css">
+<title>Native dialog</title>
+</head>
+<body>
+<main>
+<h1>Native dialog</h1>
+<dialog id="pop">
+<p>Get 10% off your first order.</p>
+<label>Name <input id="name" type="text"></label>
+<label>Email <input type="email"></label>
+</dialog>
+</main>
+<script>
+var d = document.getElementById("pop");
+if (location.hash === "#open") d.show();
+else d.showModal();
+</script>
+</body>
+</html>

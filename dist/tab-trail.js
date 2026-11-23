@@ -1117,6 +1117,7 @@ function closedBy(p) {
 }
 function popClosed() {
   var p = openPop, from = opener, pn = popName(p), by = closedBy(p), pi = popInfo;
+  if (by === " with Escape") exitOk(p);
   openPop = null;
   if (!from) return log("SKIPPED", "Lost focus", [pn, " closed" + by + ". It opened on its own, so there is no button to go back to."]);
   if (!from.isConnected || !shown(from)) return log("SKIPPED", "Lost focus", [pn, " closed" + by + ". The button that opened it is gone or hidden."]);
@@ -1150,7 +1151,44 @@ function track(a) {
     openPop = p;
     opener = lastOut;
     popInfo = { sel: sel(p), html: snip(p) };
+    if (isModal(p) && !natives.has(p)) {
+      natives.add(p);
+      log("INFO", "No way out", [popName(p), ": Native dialog: Escape closes it in the browser. Check by hand that the page does not block it."]);
+    }
   }
+}
+var natives = new WeakSet(), noExit = [], okPops = [], CLOSE = /(^|[^a-z\u010d\u0161\u017e])(close|cancel|dismiss|no thanks|not now|skip|x|\u00d7|\u2715|\u2716|zapri|prekli\u010di|ne hvala)(?![a-z\u010d\u0161\u017e])/i;
+function isModal(p) {
+  try { return p.matches("dialog:modal"); } catch (x) { return false; }
+}
+function popKey(p) { return popName(p).l + "|" + sel(p); }
+function exitOk(p) {
+  var k = popKey(p);
+  noExit = noExit.filter(function (x) {
+    if (x[2] !== k) return true;
+    x[3].fixed = true;
+    return false;
+  });
+  renderJumps();
+}
+function accName(e) { return label(e); }
+function closer(p, ps) {
+  return ps.filter(function (x) { return CLOSE.test(accName(x)) || /close|dismiss/i.test(x.id + " " + x.getAttribute("class")) || (x.matches("button:not([type]),[type=submit]") && x.closest("form[method=dialog]")); })[0] || null;
+}
+function loopCheck(p, from, to, d) {
+  var ps = stops.filter(function (x) { return within(p, x); }), n = ps.length;
+  var k = popKey(p), c = closer(p, ps), had = noExit.some(function (x) { return x[2] === k; });
+  if (n < 2 || isModal(p) || ps[d > 0 ? n - 1 : 0] !== from || ps[d > 0 ? 0 : n - 1] !== to || (had && !c)) return;
+  if (c) {
+    if (had) exitOk(p);
+    if (okPops.indexOf(k) < 0) log("OK", "No way out", [popName(p), ": Tab loops inside it, and ", ref(c), " closes it."]);
+    okPops.push(k);
+    return;
+  }
+  announce("No way out: " + popName(p).l + " has no close control Tab reaches.");
+  log("PROBLEM", "No way out", [popName(p), ": Tab loops through " + n + " stops, and none of them closes it."], aiOf(W_TRAP, "A keyboard user can close the popup with a button Tab reaches.", "Add a Close button inside it, or let Escape close it.", [["Popup", p]]));
+  noExit.push([p, n, k, logs[logs.length - 1]]);
+  renderJumps();
 }
 function tap(e) {
   tapIn = e.composedPath ? e.composedPath()[0] : e.target;
@@ -1186,6 +1224,10 @@ function renderJumps() {
   if (skipBad) {
     count(1, " skip link goes nowhere", true, false, jumpBox);
     chipUl(jumpBox, [skipBad.link], function (l) { return stopName(l) + " \u2192 " + skipBad.why; }, stopGo);
+  }
+  if (noExit.length) {
+    count(noExit.length, noExit.length === 1 ? " popup has no keyboard way out" : " popups have no keyboard way out", true, false, jumpBox);
+    chipUl(jumpBox, noExit, function (x) { return popName(x[0]).l + ": Tab loops 1 to " + x[1]; }, function (x) { stopGo(stops.filter(function (y) { return within(x[0], y); })[0] || x[0]); });
   }
   if (noSkip) count(noSkip, " stops before the main content, and no skip link", true, false, jumpBox);
   if (gl.length) {
@@ -1429,8 +1471,8 @@ function browser() {
   if ((m = u.match(/Version\/(\d+)[^ ]* (Mobile\/\S+ )?Safari/))) return "Safari " + m[1];
   return u;
 }
-var CHECKS = ["Missed spots", "Hover menus", "Forced order", "Out of order", "Keyboard trap", "Hidden focus", "Lost focus", "No focus style", "Ghost stop", "Broken skip link"];
-var WCAG = { "Missed spots": "2.1.1 A", "Hover menus": "2.1.1 A", "Out of order": "2.4.3 A", "Forced order": "2.4.3 A", "Keyboard trap": "2.1.2 A", "Lost focus": "2.4.3 A", "Hidden focus": "2.4.11 AA", "No focus style": "2.4.7 AA", "Ghost stop": "2.4.7 AA", "Broken skip link": "2.4.1 A" };
+var CHECKS = ["Missed spots", "Hover menus", "Forced order", "Out of order", "Keyboard trap", "Hidden focus", "Lost focus", "No focus style", "Ghost stop", "Broken skip link", "No way out"];
+var WCAG = { "Missed spots": "2.1.1 A", "Hover menus": "2.1.1 A", "Out of order": "2.4.3 A", "Forced order": "2.4.3 A", "Keyboard trap": "2.1.2 A", "Lost focus": "2.4.3 A", "Hidden focus": "2.4.11 AA", "No focus style": "2.4.7 AA", "Ghost stop": "2.4.7 AA", "Broken skip link": "2.4.1 A", "No way out": "2.1.2 A" };
 function showUrl(f) { return "https://matjazkorosec.com/tools/tab-trail#show-" + f.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
 function ranChecks() {
   var out = [];
@@ -1789,6 +1831,7 @@ function verifyOf(e) {
   if (e.f === "Forced order") return "Reload the page and run Tab trail again: " + el("Element") + " has no tabindex above 0, its stop number matches its place on the page, and the Forced order count goes down by 1.";
   if (e.f === "Hover menus") return "Press Tab until a link inside " + el("Element") + " has focus: the menu opens while focus is inside it, and Tab trail no longer lists it under hover menus.";
   if (e.f === "Hidden focus") return "Press Tab until " + el("Element") + " has focus: part of it shows next to " + el("Covered by") + ", and its Hidden focus line in the log says in view or partly covered.";
+  if (e.f === "No way out") return "Open " + el("Popup") + " and press Tab until a Close button has focus, then Enter closes the popup.";
   if (e.f === "Broken skip link") return el("Element") ? "Reload the page, press Tab once and then Enter on " + el("Element") + ": the next Tab lands inside the main content." : "Reload the page and press Tab once: the first stop is a skip link, and Enter on it moves focus to the main content.";
   if (e.f === "Ghost stop") return a.crit === W_NAME ? "Reload the page and run Tab trail again: " + el("Element") + " is no longer inside aria-hidden, or Tab skips it, and the Ghost stop count goes down by 1." : "Press Tab until " + el("Element") + " has focus: it shows on screen, and its Ghost stop line in the log says OK.";
   if (e.f === "No focus style") return "Press Tab until " + el("Element") + " has focus: an outline or another visible change shows on it, and its No focus style line in the log says OK.";
@@ -2651,10 +2694,10 @@ function step(s) {
 var walkDone = [];
 function untested() {
   var judged = {};
-  logs.forEach(function (e) { if ((e.k === "OK" || e.k === "PROBLEM") && (e.f === "Lost focus" || e.f === "Broken skip link")) judged[e.f] = 1; });
+  logs.forEach(function (e) { if ((e.k === "OK" || e.k === "PROBLEM") && (e.f === "Lost focus" || e.f === "Broken skip link" || e.f === "No way out")) judged[e.f] = 1; });
   if (judgedDir[1] && judgedDir[-1]) judged["Out of order"] = judged["Keyboard trap"] = 1;
   openProbs().forEach(function (e) { judged[e.f] = 1; });
-  return ["Out of order", "Keyboard trap", "Lost focus", "Broken skip link"].filter(function (f) { return !judged[f]; });
+  return ["Out of order", "Keyboard trap", "Lost focus", "No way out", "Broken skip link"].filter(function (f) { return !judged[f]; });
 }
 function sumDraw() {
   sumLine.hidden = walking || walkEnd !== "done";
@@ -2662,7 +2705,7 @@ function sumDraw() {
   var per = {}, probs = openProbs(), left = untested();
   probs.forEach(function (e) { per[e.f] = (per[e.f] || 0) + 1; });
   var red = CHECKS.filter(function (f) { return per[f]; }), ok = CHECKS.filter(function (f) { return !per[f] && left.indexOf(f) < 0; });
-  var tabLeft = left.indexOf("Out of order") >= 0 || left.indexOf("Keyboard trap") >= 0, popLeft = left.indexOf("Lost focus") >= 0;
+  var tabLeft = left.indexOf("Out of order") >= 0 || left.indexOf("Keyboard trap") >= 0, popLeft = left.indexOf("Lost focus") >= 0 || left.indexOf("No way out") >= 0;
   while (sumLine.firstChild) sumLine.removeChild(sumLine.firstChild);
   var b = document.createElement("b");
   b.textContent = pl(CHECKS.length, "check", "checks") + ": " + ok.length + " passed, " + red.length + (red.length === 1 ? " found a problem, " : " found problems, ") + left.length + " not tested.";
@@ -2780,6 +2823,7 @@ function settle() {
   var want = before >= 0 ? (before + pressed + n) % n : src ? after(src, pressed) : pressed > 0 ? 0 : n - 1;
   if (before >= 0 && wantEl && stops.indexOf(wantEl) >= 0) want = stops.indexOf(wantEl);
   var landed = popupOf(stops[current]), left = before >= 0 ? popupOf(stops[before]) : src ? popupOf(src) : null;
+  if (landed && landed === left && before >= 0) loopCheck(landed, stops[before], stops[current], pressed);
   if (first && pressed > 0 && !landed && !popMissed) {
     for (var k = 0; k < n && !popMissed; k++) {
       var pop = popupOf(stops[k]);
@@ -2898,6 +2942,10 @@ function key(e) {
     }
   }
   var fa = deep(), onBody = !fa || fa === document.body || fa === document.documentElement;
+  if (e.key === "Escape" && e.isTrusted && openPop && !gone(openPop)) {
+    var ep = openPop;
+    setTimeout(function () { if (!closed && openPop === ep && !gone(ep)) log("INFO", "No way out", [popName(ep), ": Escape did not close it. WCAG 2.2 AA does not require Escape when Tab reaches a close button; it is a best practice (ARIA APG)."]); }, 300);
+  }
   if (e.key === "Escape" && !modal() && !(openPop && !gone(openPop)) && (onBody || inPanel())) close();
   if (e.key === "Tab") {
     endPress();
