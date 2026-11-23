@@ -2851,7 +2851,7 @@ function lose(e) {
     focus();
   }, 0);
 }
-var walking = false, walkDelay = 400, walkT = 0, walked = new Set(), walkAt = null, walkEnd = null;
+var walking = false, walkDelay = 400, walkT = 0, walked = new Set(), walkAt = null, walkEnd = null, quietBack = null;
 function walkedN() { return stops.filter(function (s) { return walked.has(s); }).length; }
 function playState() {
   var at = walkAt && stops.indexOf(walkAt) >= 0 ? " at stop " + (stops.indexOf(walkAt) + 1) + " \"" + label(walkAt) + "\"" : "";
@@ -2876,6 +2876,14 @@ function stopWalk(why, fin) {
   walkT = 0;
   playLook();
   if (why) log("INFO", "Play it", [why]);
+  if (quietBack) {
+    var qb = quietBack;
+    quietBack = null;
+    if (qb.el && qb.el !== document.body && qb.el !== document.documentElement && qb.el.isConnected) qb.el.focus({ preventScroll: true });
+    else if (deep() && deep() !== document.body) deep().blur();
+    scrollTo({ left: qb.x, top: qb.y, behavior: "instant" });
+    if (fin) log("INFO", "Play it", ["Checked all " + pl(stops.length, "stop", "stops") + ", then went back to where the page was."]);
+  }
   sumDraw();
   if (fin) announce("Walked " + walkedN() + " of " + pl(stops.length, "stop", "stops") + ". " + pl(logCounts().bad, "problem", "problems") + ".");
   else if (why) announce("Play paused" + (walkAt && stops.indexOf(walkAt) >= 0 ? " at stop " + (stops.indexOf(walkAt) + 1) : "") + ". Walked " + walkedN() + " of " + pl(stops.length, "stop", "stops") + ".");
@@ -2959,6 +2967,12 @@ function startWalk() {
     announce((first ? "Play went on from stop " : "Play started at stop ") + (first + 1) + ".");
   }
   step(stops[first]);
+}
+function quietWalk(delay) {
+  quietBack = { x: scrollX, y: scrollY, el: deep() };
+  walkDelay = delay;
+  walked = new Set();
+  startWalk();
 }
 play.addEventListener("click", function () {
   if (walking) return stopWalk("Paused with the Pause button" + walkedText());
@@ -3295,10 +3309,10 @@ var api = {
     walkDelay = typeof o.delay === "number" && o.delay >= 0 ? o.delay : 400;
     return new Promise(function (res) {
       walkDone.push(res);
-      if (!walking) {
-        walked = new Set();
-        startWalk();
-      }
+      if (walking) return;
+      if (o.quiet) return quietWalk(walkDelay);
+      walked = new Set();
+      startWalk();
     });
   },
   problems: function () { return problemsOf(openProbs()); },
@@ -3345,3 +3359,4 @@ root.addEventListener("focusout", function () {
 review();
 focus();
 draw();
+if (typeof CHECK_ALL !== "undefined") setTimeout(function () { if (!closed && !walking) quietWalk(0); }, 300);

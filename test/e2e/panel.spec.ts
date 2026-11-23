@@ -122,3 +122,26 @@ test("Tab cost always lists the main content, and follows page changes", async (
   await page.evaluate(() => { document.querySelector("main button")!.textContent = "Our offers"; });
   await expect(page.locator("#tab-trail-host", { hasText: "Add to cart" })).toHaveCount(0);
 });
+
+test("Check all bookmark checks every stop on open and puts the page back", async ({ page }) => {
+  const { HREF_ALL } = await import("../../dist/index.mjs");
+  await page.goto("check-all.html");
+  await page.evaluate(decodeURIComponent(HREF_ALL.slice("javascript:".length)));
+  await page.waitForFunction(() => !!window.__tabTrail && window.__tabTrail.state().done, null, { timeout: 30000 });
+  const problems = await page.evaluate(() => window.__tabTrail.problems());
+  expect(problems.filter((p) => p.check === "No focus style").map((p) => p.selector)).toContain("#bare");
+  expect(problems.map((p) => p.check)).toContain("Ghost stop");
+  expect(problems.filter((p) => p.check === "No focus style").map((p) => p.selector)).not.toContain("#ok");
+  expect(await page.evaluate(() => [scrollX, scrollY])).toEqual([0, 0]);
+  expect(await page.evaluate(() => document.activeElement === document.body)).toBe(true);
+});
+
+test("play({ quiet: true }) puts focus and scroll back", async ({ page }) => {
+  await open(page, "check-all.html");
+  await page.evaluate(() => { document.getElementById("ok").focus(); scrollTo({ top: 40, behavior: "instant" }); });
+  const y = await page.evaluate(() => scrollY);
+  await page.evaluate(() => window.__tabTrail.play({ delay: 0, quiet: true }));
+  expect(await page.evaluate(() => document.activeElement && document.activeElement.id)).toBe("ok");
+  expect(await page.evaluate(() => scrollY)).toBe(y);
+  expect(await page.evaluate(() => window.__tabTrail.state().done)).toBe(true);
+});

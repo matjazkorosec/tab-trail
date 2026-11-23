@@ -41,6 +41,7 @@ export function buildDist() {
   const CODE = source.split("__VERSION__").join(VERSION);
   const FILE = mitFor(VERSION) + "\n(function(){\n" + CODE.trim() + "\n})();\n";
   const HREF = "javascript:" + encodeURIComponent("(function(){" + CODE + "})();void 0");
+  const HREF_ALL = "javascript:" + encodeURIComponent("(function(){var CHECK_ALL=1;" + CODE + "})();void 0");
 
   const readJson = (name) => JSON.parse(readFileSync(join(root, "data", name + ".json"), "utf8"));
   const features = readJson("features");
@@ -55,6 +56,7 @@ export function buildDist() {
     CODE,
     FILE,
     HREF,
+    HREF_ALL,
     GROUPS: features.groups,
     FEATURES: features.items,
     KEYS: readJson("keys"),
@@ -71,6 +73,7 @@ export function buildDist() {
     CODE: "string",
     FILE: "string",
     HREF: "string",
+    HREF_ALL: "string",
     GROUPS: '{ id: "red" | "read" | "work" | "settings"; title: string }[]',
     FEATURES:
       '{ title: string; short: string; long: string; group: "red" | "read" | "work" | "settings"; wcag?: string }[]',
