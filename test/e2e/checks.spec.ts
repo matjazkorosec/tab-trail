@@ -105,6 +105,48 @@ test("Header links are not skip links", async ({ page }) => {
   expect(await page.evaluate(() => window.__tabTrail.problems())).toEqual([]);
 });
 
+for (const [file, want, ok] of [
+  ["no-way-out.html", ["No way out"], 0],
+  ["way-out.html", [], 1],
+  ["way-out.html#icon", [], 1],
+  ["way-out.html#class", [], 1],
+  ["native-dialog.html", [], 0],
+] as const) {
+  test("No way out: " + file, async ({ page, browserName }) => {
+    await open(page, file);
+    await page.focus("#pop input");
+    for (let i = 0; i < 9; i++) await press(page, browserName === "webkit" ? "Alt+Tab" : "Tab");
+    expect(await checks(page)).toEqual(want);
+    const lines = await page.evaluate(() => window.__tabTrail.log());
+    expect(lines.filter((l) => l.check === "No way out" && l.result === "OK")).toHaveLength(ok);
+    if (file === "native-dialog.html") expect(lines.some((l) => l.check === "No way out" && l.result === "INFO" && l.text.includes("Native dialog"))).toBe(true);
+  });
+}
+
+test("No way out: a non-modal dialog is not called native", async ({ page }) => {
+  await open(page, "native-dialog.html#open");
+  await page.focus("#pop input");
+  const lines = await page.evaluate(() => window.__tabTrail.log());
+  expect(lines.some((l) => l.text.includes("Native dialog"))).toBe(false);
+});
+
+test("No way out clears when a Close button is added", async ({ page, browserName }) => {
+  const tab = browserName === "webkit" ? "Alt+Tab" : "Tab";
+  await open(page, "no-way-out.html");
+  await page.focus("#pop input");
+  for (let i = 0; i < 3; i++) await press(page, tab);
+  expect(await checks(page)).toEqual(["No way out"]);
+  await page.evaluate(() => document.getElementById("pop")!.append(Object.assign(document.createElement("button"), { type: "button", textContent: "Close" })));
+  for (let i = 0; i < 5; i++) await press(page, tab);
+  expect(await checks(page)).toEqual([]);
+});
+
+test("Play alone does not pass No way out", async ({ page }) => {
+  await open(page, "way-out.html");
+  await page.evaluate(() => window.__tabTrail.play({ delay: 50 }));
+  expect((await page.evaluate(() => window.__tabTrail.state())).untested).toContain("No way out");
+});
+
 test("Out of order", async ({ page }) => {
   await open(page, "out-of-order.html");
   await page.focus("#first");
