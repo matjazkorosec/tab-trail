@@ -48,6 +48,27 @@ test("No focus style skips a stop under the mouse", async ({ page }) => {
   expect(probs.map((p) => p.selector)).toEqual(["#bare"]);
 });
 
+test("Ghost stop", async ({ page }) => {
+  await open(page, "ghost-stop.html");
+  await page.evaluate(() => window.__tabTrail.play({ delay: 50 }));
+  const probs = await page.evaluate(() => window.__tabTrail.problems());
+  expect(await checks(page)).toEqual(["Ghost stop"]);
+  expect(probs).toHaveLength(5);
+  const sels = probs.map((p) => p.selector);
+  expect(sels).toContain("#hid");
+  expect(sels).toContain("#clear");
+  expect(sels.filter((s) => /strip|skip|late|slide|sw/.test(s))).toEqual([]);
+  for (const p of probs) expect(p.wcag).toBe(p.selector === "#hid" ? "4.1.2 A" : "2.4.7 AA");
+});
+
+test("Ghost stop drops a stop that left the page", async ({ page }) => {
+  await open(page, "ghost-stop.html");
+  await page.evaluate(() => window.__tabTrail.play({ delay: 50 }));
+  await page.evaluate(() => document.getElementById("off")!.remove());
+  await expect(page.locator("#tab-trail-host button.c", { hasText: "off screen" })).toHaveCount(0);
+  await expect(page.locator("#tab-trail-host button.c", { hasText: "Clear, invisible" })).toHaveCount(1);
+});
+
 test("Out of order", async ({ page }) => {
   await open(page, "out-of-order.html");
   await page.focus("#first");

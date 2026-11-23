@@ -903,8 +903,63 @@ function outlineRule(e) {
   }
   return null;
 }
+var ghosts = [], ghostOf = new Map(), probGhost = new Map(), GHOST = { off: "is off screen", size: "has no size", inv: "is invisible", aria: "is inside aria-hidden" };
+function unseen(e) {
+  var r = e.getBoundingClientRect();
+  if (r.width < 1 || r.height < 1) return "size";
+  if (r.right <= 0 || r.left >= innerWidth || r.bottom <= 0 || r.top >= innerHeight) return "off";
+  if (getComputedStyle(e).visibility === "hidden") return "inv";
+  for (var n = e; n; n = upOf(n)) if (getComputedStyle(n).opacity === "0") return "inv";
+  return "";
+}
+function ghostWhy(e) {
+  var why = unseen(e), lb = (e.labels && e.labels[0]) || (e.tagName === "INPUT" && e.nextElementSibling);
+  if (why && why !== "off" && lb && !unseen(lb)) why = "";
+  for (var n = e; n && !why; n = upOf(n)) if (n.getAttribute("aria-hidden") === "true") why = "aria";
+  return why;
+}
+function ghostCheck(s) {
+  if (hovers.some(function (h) { return hovSeen.has(h) && within(hovHid.get(h), s); })) return true;
+  var why = ghostWhy(s), was = ghosts.indexOf(s) >= 0;
+  if (!why) {
+    if (!was) log("OK", "Ghost stop", [ref(s), " is visible when Tab is on it."]);
+    else {
+      ghosts.splice(ghosts.indexOf(s), 1);
+      ghostOf.delete(s);
+      probGhost.get(s).fixed = true;
+      probGhost.delete(s);
+      renderJumps();
+      queue();
+      log("OK", "Ghost stop", [ref(s), " shows now when Tab is on it."]);
+    }
+    return false;
+  }
+  if (was) return true;
+  ghosts.push(s);
+  ghostOf.set(s, why);
+  renderJumps();
+  queue();
+  announce("Ghost stop: stop " + (stops.indexOf(s) + 1) + ", " + label(s) + ", " + GHOST[why] + ".");
+  var aria = why === "aria";
+  log("PROBLEM", "Ghost stop", [ref(s), " " + GHOST[why] + " when Tab is on it."], aiOf(aria ? W_NAME : W_VIS, aria ? "An element Tab can reach is not hidden from screen readers." : "The element shows on screen while it has keyboard focus.", aria ? "Remove aria-hidden, or add inert or tabindex=\"-1\" so Tab skips it too." : "Hide it with display: none or inert while it is closed, or show it when it gets focus.", [["Element", s, null, true]]), aria ? "4.1.2 A" : null);
+  probGhost.set(s, logs[logs.length - 1]);
+  return true;
+}
+function live(m) { return stops.indexOf(m) >= 0; }
+function runs(list) {
+  var out = [];
+  byStop(list).forEach(function (e) {
+    var g = out[out.length - 1];
+    if (g && stops.indexOf(g[g.length - 1]) === stops.indexOf(e) - 1 && ghostOf.get(g[0]) === ghostOf.get(e)) g.push(e);
+    else out.push([e]);
+  });
+  return out;
+}
+function span(g) {
+  var a = stops.indexOf(g[0]) + 1, b = stops.indexOf(g[g.length - 1]) + 1;
+  return a === b ? String(a) : a + " to " + b;
+}
 function ringCheck(s) {
-  if (hovers.some(function (h) { return hovSeen.has(h) && within(hovHid.get(h), s); })) return;
   var was = noRing.indexOf(s) >= 0, before = restSig.get(s);
   if (!before) return log("SKIPPED", "No focus style", [ref(s), " has no style from before focus yet, or the mouse was on it. Judged on the next visit."]);
   if (before !== focusSig(s)) {
@@ -933,7 +988,7 @@ function check(s, then) {
   }
   if (!s) return end();
   var was = covered.indexOf(s) >= 0;
-  var at = where(s), still = 0, tries = 0;
+  var at = where(s), still = 0, tries = 0, late = 0;
   function look() {
     if (closed || (covered.indexOf(s) >= 0) !== was) return end();
     var now = where(s);
@@ -950,10 +1005,23 @@ function check(s, then) {
       still = 0;
     } else still++;
     if (still < 2 && ++tries < 90) return requestAnimationFrame(look);
-    ringCheck(s);
-    var h = hideInfo(s);
+    if (!late && ghostWhy(s)) {
+      late = 1;
+      return setTimeout(function () {
+        if (closed) return end();
+        if (deep() !== s) {
+          log("SKIPPED", "Ghost stop", [ref(s), " lost focus before it could be judged."]);
+          return end();
+        }
+        still = 0;
+        look();
+      }, 400);
+    }
+    if (!ghostCheck(s)) ringCheck(s);
     tested(s);
     hidTested.add(s);
+    if (ghosts.indexOf(s) >= 0) return end();
+    var h = hideInfo(s);
     if (!h.tested) {
       log("SKIPPED", "Hidden focus", [ref(s), " " + h.why + ". Not tested."]);
       return end();
@@ -1071,9 +1139,14 @@ function renderJumps() {
     count(covered.length, covered.length === 1 ? " stop is hidden when Tab reaches it" : " stops are hidden when Tab reaches them", true, false, jumpBox);
     chipUl(jumpBox, byStop(covered), stopName, stopGo);
   }
-  if (noRing.length) {
-    count(noRing.length, noRing.length === 1 ? " stop shows no focus when Tab is on it" : " stops show no focus when Tab is on them", true, false, jumpBox);
-    chipUl(jumpBox, byStop(noRing), stopName, stopGo);
+  var gl = ghosts.filter(live), nl = noRing.filter(live);
+  if (gl.length) {
+    count(gl.length, gl.length === 1 ? " stop you can't see when Tab is on it" : " stops you can't see when Tab is on them", true, false, jumpBox);
+    chipUl(jumpBox, runs(gl), function (g) { return span(g) + ": " + label(g[0]) + ", " + GHOST[ghostOf.get(g[0])].replace(/^(is|has) (inside )?/, ""); }, function (g) { stopGo(g[0]); });
+  }
+  if (nl.length) {
+    count(nl.length, nl.length === 1 ? " stop shows no focus when Tab is on it" : " stops show no focus when Tab is on them", true, false, jumpBox);
+    chipUl(jumpBox, byStop(nl), stopName, stopGo);
   }
   if (trapped.length) {
     count(trapped.length, trapped.length === 1 ? " stop where Tab gets stuck" : " stops where Tab gets stuck", true, false, jumpBox);
@@ -1308,8 +1381,8 @@ function browser() {
   if ((m = u.match(/Version\/(\d+)[^ ]* (Mobile\/\S+ )?Safari/))) return "Safari " + m[1];
   return u;
 }
-var CHECKS = ["Missed spots", "Hover menus", "Forced order", "Out of order", "Keyboard trap", "Hidden focus", "Lost focus", "No focus style"];
-var WCAG = { "Missed spots": "2.1.1 A", "Hover menus": "2.1.1 A", "Out of order": "2.4.3 A", "Forced order": "2.4.3 A", "Keyboard trap": "2.1.2 A", "Lost focus": "2.4.3 A", "Hidden focus": "2.4.11 AA", "No focus style": "2.4.7 AA" };
+var CHECKS = ["Missed spots", "Hover menus", "Forced order", "Out of order", "Keyboard trap", "Hidden focus", "Lost focus", "No focus style", "Ghost stop"];
+var WCAG = { "Missed spots": "2.1.1 A", "Hover menus": "2.1.1 A", "Out of order": "2.4.3 A", "Forced order": "2.4.3 A", "Keyboard trap": "2.1.2 A", "Lost focus": "2.4.3 A", "Hidden focus": "2.4.11 AA", "No focus style": "2.4.7 AA", "Ghost stop": "2.4.7 AA" };
 function showUrl(f) { return "https://matjazkorosec.com/tools/tab-trail#show-" + f.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
 function ranChecks() {
   var out = [];
@@ -1519,7 +1592,7 @@ function logText() {
   });
   return out.join("\n");
 }
-var W_FORCE = "2.4.3 Focus Order (Level A). tabindex above 0 pulls it ahead of the page. It fails WCAG 2.4.3 when that order makes no sense (F44).", W_TRAP = "2.1.2 No Keyboard Trap (Level A)", W_KEY = "2.1.1 Keyboard (Level A)", W_VIS = "2.4.7 Focus Visible (Level AA)", W_ORDER = "2.4.3 Focus Order (Level A)", W_HIDE = "2.4.11 Focus Not Obscured (Minimum) (Level AA)";
+var W_FORCE = "2.4.3 Focus Order (Level A). tabindex above 0 pulls it ahead of the page. It fails WCAG 2.4.3 when that order makes no sense (F44).", W_TRAP = "2.1.2 No Keyboard Trap (Level A)", W_KEY = "2.1.1 Keyboard (Level A)", W_VIS = "2.4.7 Focus Visible (Level AA)", W_ORDER = "2.4.3 Focus Order (Level A)", W_HIDE = "2.4.11 Focus Not Obscured (Minimum) (Level AA)", W_NAME = "4.1.2 Name, Role, Value (Level A)";
 function cssId(t) { return /^[A-Za-z][\w-]*$/.test(t); }
 function sel(e) {
   if (!e || e.nodeType !== 1) return "";
@@ -1667,6 +1740,7 @@ function verifyOf(e) {
   if (e.f === "Forced order") return "Reload the page and run Tab trail again: " + el("Element") + " has no tabindex above 0, its stop number matches its place on the page, and the Forced order count goes down by 1.";
   if (e.f === "Hover menus") return "Press Tab until a link inside " + el("Element") + " has focus: the menu opens while focus is inside it, and Tab trail no longer lists it under hover menus.";
   if (e.f === "Hidden focus") return "Press Tab until " + el("Element") + " has focus: part of it shows next to " + el("Covered by") + ", and its Hidden focus line in the log says in view or partly covered.";
+  if (e.f === "Ghost stop") return a.crit === W_NAME ? "Reload the page and run Tab trail again: " + el("Element") + " is no longer inside aria-hidden, or Tab skips it, and the Ghost stop count goes down by 1." : "Press Tab until " + el("Element") + " has focus: it shows on screen, and its Ghost stop line in the log says OK.";
   if (e.f === "No focus style") return "Press Tab until " + el("Element") + " has focus: an outline or another visible change shows on it, and its No focus style line in the log says OK.";
   if (e.f === "Keyboard trap") return "Put focus on " + el("Element") + " and press Tab: focus moves on to " + el("Expected next") + ", and the log shows an OK Out of order line.";
   if (e.f === "Lost focus") return "Open the popup from " + el("Opened by") + " with Enter, then close it with Escape or its close button: focus is back on " + el("Opened by") + ", and the log shows an OK Lost focus line.";
@@ -2253,9 +2327,11 @@ function draw() {
   if (win > last) win = last;
   var lo = paged() ? win * PAGE : 0, hi = paged() ? Math.min(lo + PAGE, stops.length) : stops.length;
   var red = [], at = [];
-  missed.concat(hovers, noRing).forEach(function (m) {
-    var p = isPinned(m);
-    if (p || page) red.push([m, m.getBoundingClientRect(), p]);
+  var edges = {};
+  missed.concat(hovers, noRing.filter(live), ghosts.filter(live)).forEach(function (m) {
+    var p = isPinned(m), r = m.getBoundingClientRect(), ed = ghostOf.get(m) === "off" ? (r.right <= 0 ? "l" : r.left >= innerWidth ? "r" : r.bottom <= 0 ? "t" : r.top >= innerHeight ? "b" : "") : "";
+    if (ed) (edges[ed] = edges[ed] || []).push(m);
+    else if (p || page) red.push([m, r, p]);
   });
   for (var i = lo; i < hi; i++) {
     var sr = stops[i].getBoundingClientRect(), st = sr.width < 2 && sr.height < 2;
@@ -2281,6 +2357,21 @@ function draw() {
     var m = x[0], r = x[1];
     if (x[2]) box(m, r, under);
     else if (!keep) box(m, { left: r.left + sx, top: r.top + sy, width: r.width, height: r.height }, underPg);
+  });
+  Object.keys(edges).forEach(function (ed) {
+    var vw = Math.min(innerWidth, document.documentElement.clientWidth || innerWidth), vh = Math.min(innerHeight, document.documentElement.clientHeight || innerHeight), v = ed === "l" || ed === "r", max = v ? vh : vw, lo = max, hi = 0;
+    edges[ed].forEach(function (m) {
+      var r = m.getBoundingClientRect();
+      lo = Math.min(lo, v ? r.top : r.left);
+      hi = Math.max(hi, v ? r.bottom : r.right);
+    });
+    lo = Math.max(4, Math.min(lo, max - 144));
+    hi = Math.min(max - 4, Math.max(hi, lo + 140));
+    var x = v ? (ed === "r" ? vw - 36 : 4) : lo, y = v ? lo : ed === "b" ? vh - 36 : 4, w = v ? 32 : hi - lo, h = v ? hi - lo : 32;
+    el("rect", { x: x, y: y, width: w, height: h, rx: 6, fill: "rgba(208,16,58,.12)", stroke: "#d0103a", "stroke-width": 3, "stroke-dasharray": "7 5" }, under);
+    el("path", { d: { r: "M-5 -9l10 9-10 9", l: "M5 -9l-10 9 10 9", t: "M-9 5l9-10 9 10", b: "M-9 -5l9 10 9-10" }[ed], transform: "translate(" + (x + (v ? 16 : 22)) + " " + (y + (v ? 22 : 16)) + ")", fill: "none", stroke: "#d0103a", "stroke-width": 3, "stroke-linecap": "round", "stroke-linejoin": "round" }, under);
+    var t = el("text", { x: 0, y: 0, transform: "translate(" + (x + w / 2) + " " + (y + h / 2) + ")" + (v ? " rotate(-90)" : ""), fill: "#d0103a", stroke: "#fff", "stroke-width": 3, "paint-order": "stroke", "font-size": 11, "font-weight": 700, "font-family": "system-ui,sans-serif", "text-anchor": "middle", "dominant-baseline": "middle" }, under);
+    t.textContent = runs(edges[ed]).map(span).join(", ");
   });
   if (fr) {
     var hr = fr[0], hp = fr[1];
