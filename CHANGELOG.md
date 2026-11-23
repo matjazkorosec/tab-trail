@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 1.1.0 (2026-11-23)
+
+5 new checks and 2 new settings: focus you can see, skip links, popups with a way out, names, Tab cost, Region map.
+
 - New check: No focus style (2.4.7 AA), a stop that shows nothing when Tab is on it.
 - New check: Ghost stop (2.4.7 AA, 4.1.2 A), a stop that is off screen, invisible or inside aria-hidden.
 - New check: Broken skip link (2.4.1 A), a skip link that goes nowhere, or many stops and no skip link.

@@ -1,7 +1,7 @@
 {
   "name": "tab-trail",
-  "version": "1.0.0",
-  "updated": "October 29, 2026",
+  "version": "1.1.0",
+  "updated": "November 23, 2026",
   "description": "Tab order and focus order checker. A bookmarklet that draws every Tab stop and marks what Tab never reaches.",
   "license": "MIT",
   "type": "module",
