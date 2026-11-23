@@ -7,7 +7,7 @@
 Check all, a bookmark that shows every red mark at once, and steadier No focus style results.
 
 - Fix: No focus style ignores looping CSS animations, so repeated Play runs give the same count.
-- New: Check all, a second bookmark that checks every stop on open and puts the page back, and play({ quiet: true }).
+- New: Check all, a second bookmark that checks every stop as soon as you click it, then puts the page back, so every red mark is on screen at once. Drag the Check all button from matjazkorosec.com/tools/tab-trail. From a script: play({ quiet: true }).
 
 ## 1.1.0 (2026-11-23)
 

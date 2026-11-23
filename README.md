@@ -22,6 +22,8 @@ I built it to check every page of my own site with the keyboard. **[Try it on th
 
 Your bookmark keeps the version you dragged. To get new checks, delete it and drag the button again.
 
+Want every red mark at once, for a screenshot or a report? Drag the **Check all** button from the same page too. Click it and it walks every stop on its own, then puts the page back where it was, with every mark drawn. With Tab trail already open, `window.__tabTrail.play({ quiet: true })` does the same.
+
 ### Console
 
 <!-- console:start -->
