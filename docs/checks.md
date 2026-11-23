@@ -73,3 +73,53 @@ WCAG `2.4.3 A`
 Each time Tab jumps out of order, the panel lists the jump in red. A popup that blocks the page must get Tab first, or it is flagged too.
 
 [See it](https://matjazkorosec.com/tools/tab-trail#show-out-of-order)
+
+### 10 No focus style
+
+WCAG `2.4.7 AA`
+
+"2 stops show no focus when Tab is on them."
+
+Tab trail compares how a stop looks before and after it gets focus: its outline, shadow, border, colors, underline, its ::before and ::after, and its parent, sibling, label and first child, so a ring drawn around it counts. Nothing changed means keyboard users can't see where they are. Copy for AI names the CSS rule that removes the outline.
+
+[See it](https://matjazkorosec.com/tools/tab-trail#show-no-focus-style)
+
+### 11 Ghost stop
+
+WCAG `2.4.7 AA, 4.1.2 A`
+
+"7 stops you can't see when Tab is on them."
+
+Tab lands on something nobody can see: off screen, no size, transparent, or inside aria-hidden. Off-screen stops, like a closed phone menu, become 1 red strip at the edge they hide behind, with the range. A slide or menu that moves in on focus passes.
+
+[See it](https://matjazkorosec.com/tools/tab-trail#show-ghost-stop)
+
+### 12 Broken skip link
+
+WCAG `2.4.1 A`
+
+"1 skip link goes nowhere."
+
+A skip link among the first stops points at an id that is missing or hidden, so Enter does nothing. A red line runs to an X where the target should be. With no skip link and 15 or more stops before the main content, that is listed too.
+
+[See it](https://matjazkorosec.com/tools/tab-trail#show-broken-skip-link)
+
+### 13 No way out
+
+WCAG `2.1.2 A`
+
+"1 popup has no keyboard way out."
+
+Tab goes round and round inside a popup, and none of its stops closes it. Tab trail never presses keys itself, so it judges your own Tab presses. A native dialog opened with showModal() is never red, because Escape closes it.
+
+[See it](https://matjazkorosec.com/tools/tab-trail#show-no-way-out)
+
+### 14 Nameless stop
+
+WCAG `4.1.2 A`
+
+"3 stops have no name for screen readers."
+
+An icon button or image link with no text, no aria-label and no alt makes a screen reader say only "button" or "link". Hover any dot to see the name Tab trail found: "3 · button · no name".
+
+[See it](https://matjazkorosec.com/tools/tab-trail#show-nameless-stop)

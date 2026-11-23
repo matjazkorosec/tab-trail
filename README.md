@@ -50,6 +50,11 @@ The script is in `node_modules/tab-trail/dist/tab-trail.js`. The example below r
 - **07 Keyboard trap** (WCAG 2.1.2 A): When Tab and Shift+Tab both leave focus on the same spot, a keyboard user can't get out. The panel lists that stop in red, once, like "2: Message". A spot that keeps Tab but says how to leave, like a code editor, is not red. [See it](https://matjazkorosec.com/tools/tab-trail#show-keyboard-trap)
 - **08 Lost focus** (WCAG 2.4.3 A): When a popup or cookie bar closes, focus should go back to the button that opened it. If it drops to the top of the page instead, the panel lists it in red, like "2 → Start". [See it](https://matjazkorosec.com/tools/tab-trail#show-lost-focus)
 - **09 Out of order** (WCAG 2.4.3 A): Each time Tab jumps out of order, the panel lists the jump in red. A popup that blocks the page must get Tab first, or it is flagged too. [See it](https://matjazkorosec.com/tools/tab-trail#show-out-of-order)
+- **10 No focus style** (WCAG 2.4.7 AA): Tab trail compares how a stop looks before and after it gets focus: its outline, shadow, border, colors, underline, its ::before and ::after, and its parent, sibling, label and first child, so a ring drawn around it counts. Nothing changed means keyboard users can't see where they are. Copy for AI names the CSS rule that removes the outline. [See it](https://matjazkorosec.com/tools/tab-trail#show-no-focus-style)
+- **11 Ghost stop** (WCAG 2.4.7 AA, 4.1.2 A): Tab lands on something nobody can see: off screen, no size, transparent, or inside aria-hidden. Off-screen stops, like a closed phone menu, become 1 red strip at the edge they hide behind, with the range. A slide or menu that moves in on focus passes. [See it](https://matjazkorosec.com/tools/tab-trail#show-ghost-stop)
+- **12 Broken skip link** (WCAG 2.4.1 A): A skip link among the first stops points at an id that is missing or hidden, so Enter does nothing. A red line runs to an X where the target should be. With no skip link and 15 or more stops before the main content, that is listed too. [See it](https://matjazkorosec.com/tools/tab-trail#show-broken-skip-link)
+- **13 No way out** (WCAG 2.1.2 A): Tab goes round and round inside a popup, and none of its stops closes it. Tab trail never presses keys itself, so it judges your own Tab presses. A native dialog opened with showModal() is never red, because Escape closes it. [See it](https://matjazkorosec.com/tools/tab-trail#show-no-way-out)
+- **14 Nameless stop** (WCAG 4.1.2 A): An icon button or image link with no text, no aria-label and no alt makes a screen reader say only "button" or "link". Hover any dot to see the name Tab trail found: "3 · button · no name". [See it](https://matjazkorosec.com/tools/tab-trail#show-nameless-stop)
 <!-- checks:end -->
 
 Each check in full: [docs/checks.md](docs/checks.md). Everything else it does: [docs/features.md](docs/features.md). Keys and how to read the trail: [docs/keys.md](docs/keys.md).
@@ -66,6 +71,8 @@ While Tab trail is open, the page has `window.__tabTrail`, so a test or an AI ag
 - `window.__tabTrail.report()`: The Copy for AI text.
 - `window.__tabTrail.log()`: Every Log line as data: time, result, check, wcag, text, fixed, selector, stop.
 - `window.__tabTrail.state()`: { walked, total, done, untested }. done is true once Play reached the end. untested names the checks that never ran, like Lost focus when no popup was opened, so a green test can tell a clean page from a check that was skipped.
+- `window.__tabTrail.cost(selector)`: With a CSS selector, the Tab presses from the top of the page to that element, or null if Tab never reaches it. Without one, the goals Tab cost finds: name, presses, how it was found, selector.
+- `window.__tabTrail.regions()`: How many stops sit in each region: { header, nav, main, aside, footer, other }.
 - `window.__tabTrail.version`: "1.0.0"
 - `window.__tabTrail.close()`: Closes it.
 <!-- api:end -->

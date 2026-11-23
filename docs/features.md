@@ -8,7 +8,7 @@ Generated from data/. Edit the files in data/, then run `npm run docs`.
 
 No Tab key? Press Play, it walks every stop.
 
-Play moves focus through every stop for you and checks each one, then 1 line sums up all 7 checks. It only moves focus, it never clicks.
+Play moves focus through every stop for you and checks each one, then 1 line sums up all 12 checks. It only moves focus, it never clicks.
 
 [See it](https://matjazkorosec.com/tools/tab-trail#show-play-it)
 
@@ -22,7 +22,7 @@ Every check as it runs: OK, PROBLEM, SKIPPED with why, or INFO. Filter it, tick 
 
 ## Hand it to your AI
 
-### 10 Copy for AI
+### 15 Copy for AI
 
 Paste the problems into your AI. It gets the fix.
 
@@ -32,7 +32,7 @@ Copies only the problems, each with its WCAG rule, a CSS selector, the HTML, the
 
 ## How to read the trail
 
-### 11 Tab order
+### 16 Tab order
 
 Numbers show where Tab goes. The orange one is where you are.
 
@@ -40,7 +40,7 @@ Each dot is 1 press of the Tab key, in the order the keyboard visits, and the on
 
 [See it](https://matjazkorosec.com/tools/tab-trail#show-tab-order)
 
-### 12 Hidden links
+### 17 Hidden links
 
 Skip links show as dashed dots.
 
@@ -48,7 +48,7 @@ Some links stay hidden until Tab reaches them, like "Skip to content". They get 
 
 [See it](https://matjazkorosec.com/tools/tab-trail#show-hidden-links)
 
-### 13 Inside dialogs
+### 18 Inside dialogs
 
 A dialog opens? The trail goes in too.
 
@@ -56,7 +56,7 @@ When a page opens a modal dialog (the HTML <dialog> element), the trail goes in 
 
 [See it](https://matjazkorosec.com/tools/tab-trail#show-inside-dialogs)
 
-### 14 Late arrivals
+### 19 Late arrivals
 
 Scroll, and new buttons get counted.
 
@@ -64,7 +64,7 @@ It checks again as you scroll. Buttons that only appear later, like a back to to
 
 [See it](https://matjazkorosec.com/tools/tab-trail#show-late-arrivals)
 
-### 15 Big pages
+### 20 Big pages
 
 Over 50 stops? See 50 at a time.
 
@@ -74,7 +74,7 @@ Over 50 stops, it shows 50 at a time. Next and Previous page through them, and T
 
 ## How to work with it
 
-### 16 Out of the way
+### 21 Out of the way
 
 Drag the panel anywhere, or send it to a corner.
 
@@ -82,7 +82,7 @@ Grab the panel and drag it anywhere, or press the corner button to move it to th
 
 [See it](https://matjazkorosec.com/tools/tab-trail#show-out-of-the-way)
 
-### 17 The count
+### 22 The count
 
 Fix it, run it again, compare.
 
@@ -90,7 +90,7 @@ The panel counts the stops and the spots Tab skips. Fix something, run it again 
 
 [See it](https://matjazkorosec.com/tools/tab-trail#show-the-count)
 
-### 18 Find it
+### 23 Find it
 
 Click a red spot in the list to see it.
 
@@ -98,7 +98,7 @@ The panel lists every spot Tab never reaches, named by its label or text, 50 at 
 
 [See it](https://matjazkorosec.com/tools/tab-trail#show-find-it)
 
-### 19 Keyboard
+### 24 Keyboard
 
 No mouse? Ctrl+Shift+F jumps into the panel.
 
@@ -106,7 +106,7 @@ Press Ctrl+Shift+F, on a Mac and on Windows, and focus jumps to Play in the pane
 
 [See it](https://matjazkorosec.com/tools/tab-trail#show-keyboard)
 
-### 20 Jump there
+### 25 Jump there
 
 Click a number and focus moves there.
 
@@ -116,7 +116,7 @@ Click any number and focus moves to that spot, as if you had tabbed there. The n
 
 ## Settings
 
-### 21 Spotlight
+### 26 Spotlight
 
 Dim the page, light up where Tab is.
 
@@ -124,7 +124,23 @@ Open Settings and tick Spotlight: the page goes dark except what Tab is on, so y
 
 [See it](https://matjazkorosec.com/tools/tab-trail#show-spotlight)
 
-### 22 Show lines
+### 27 Tab cost
+
+How many Tab presses to the goal?
+
+Lists up to 3 goals with the Tab presses it takes to reach them: the main content, buttons like Add to cart or Subscribe, and anything marked data-tab-trail-goal="Name". Pick a goal lets you click any stop to add it. Each goal gets an orange ring and its number on the page.
+
+[See it](https://matjazkorosec.com/tools/tab-trail#show-tab-cost)
+
+### 28 Region map
+
+Where do the Tab presses go?
+
+Counts the stops in the header, navigation, main content, sidebar and footer, as 1 bar. Click a part to tint that region on the page. It shows at a glance when the content is buried behind the menus.
+
+[See it](https://matjazkorosec.com/tools/tab-trail#show-region-map)
+
+### 29 Show lines
 
 Just the numbers? Untick Show lines.
 
@@ -132,7 +148,7 @@ Open Settings and untick Show lines, and only the numbered dots stay. Long lines
 
 [See it](https://matjazkorosec.com/tools/tab-trail#show-show-lines)
 
-### 23 Long lines
+### 30 Long lines
 
 Too many lines? Untick Long lines.
 
@@ -140,7 +156,7 @@ Open Settings, untick Long lines, and no line is over 100 px. A longer one becom
 
 [See it](https://matjazkorosec.com/tools/tab-trail#show-long-lines)
 
-### 24 Out of Tab
+### 31 Out of Tab
 
 The panel stays out of the trail.
 
