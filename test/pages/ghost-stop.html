@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="style.css">
+<title>Ghost stop</title>
+<style>
+.skip { position: absolute; top: -40px; left: 0; padding: 8px; background: #fff; }
+.skip:focus { top: 0; }
+#off { position: fixed; top: 0; left: 100%; width: 200px; }
+#off a { display: block; }
+#strip { overflow-x: auto; width: 300px; white-space: nowrap; }
+#strip a { display: inline-block; width: 200px; }
+p { margin: 0 0 16px; }
+.late { opacity: 0; }
+.late:focus-within { opacity: 1; transition: opacity 0s 200ms; }
+.slide { display: inline-block; transform: translateX(100vw); }
+.slide:focus { transform: none; transition: transform 0s 300ms; }
+.sw { position: relative; display: inline-block; }
+.sw input { position: absolute; opacity: 0; width: 0; height: 0; }
+.slider { display: inline-block; width: 32px; height: 18px; border-radius: 9px; background: #c9bdb0; }
+</style>
+</head>
+<body>
+<a id="skip" class="skip" href="#top">Skip to content</a>
+<nav id="off"><a href="#1">One</a><a href="#2">Two</a><a href="#3">Three</a></nav>
+<main id="top">
+<h1>Ghost stop</h1>
+<p><button id="clear" type="button" style="opacity: 0">Clear</button></p>
+<p><label><input id="agree" type="checkbox" style="opacity: 0; position: absolute"> Agree</label></p>
+<p class="late"><a id="late" href="#l">Late</a></p>
+<p><a id="slide" class="slide" href="#m">Slide in</a></p>
+<p><span class="sw"><input id="sw" type="checkbox" aria-label="Dark mode"><span class="slider"></span></span></p>
+<div aria-hidden="true"><p><a id="hid" href="#h">Hid</a></p></div>
+<div id="strip"><a href="#s1">Slide one</a><a href="#s2">Slide two</a><a href="#s3">Slide three</a></div>
+</main>
+</body>
+</html>
