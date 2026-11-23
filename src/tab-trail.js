@@ -398,6 +398,7 @@ style.textContent = [
   ".p.g{cursor:grabbing;user-select:none}",
   ".n b.e{color:#d0103a}",
   ".n b.ok{color:#1f7a3f}",
+  ".bar{display:flex;gap:2px;height:24px;margin:6px 0 2px}.bar button{border:0;padding:0;min-width:6px;border-radius:4px;cursor:pointer}.bar button:focus-visible{outline:2px solid #1a1612;outline-offset:2px}.bl{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:13px;margin:4px 0 8px}.bl em{width:10px;height:10px;border-radius:3px;display:inline-block;margin-right:5px}",
   ".s{cursor:pointer}",
   "svg.in{z-index:1}",
   "g.o{pointer-events:auto;cursor:pointer;-webkit-user-select:none;user-select:none}",
@@ -704,10 +705,11 @@ function fill() {
     count(forcedBad.length, forcedBad.length === 1 ? " stop has tabindex above 0, which pulls it ahead of the page" : " stops have tabindex above 0, which pulls them ahead of the page", true);
     chipList(forcedBad, true);
   }
+  mapDraw();
   if (skip) skipPanel();
   if (had >= 0 && chips.length) chips[Math.min(had, chips.length - 1)].focus();
 }
-function sig() { return [stops.length].concat(missed, ["|"], hovers, ["|"], forced, ["|"], forcedBad); }
+function sig() { return [stops.length, mapOn && mapOn.checked && JSON.stringify(regions()[0])].concat(missed, ["|"], hovers, ["|"], forced, ["|"], forcedBad); }
 function chipList(list, num) {
   var made = chipUl(info, list, function (m) { return (num && stops.indexOf(m) >= 0 ? stops.indexOf(m) + 1 + ": " : "") + label(m); }, function (m, c) {
     shownEl = m;
@@ -742,6 +744,8 @@ var prevBtn = pageBtn("Previous", -1), nextBtn = pageBtn("Next", 1);
 var group = document.createElement("div");
 group.className = "cd gp";
 group.appendChild(pager);
+var mapBox = document.createElement("div");
+resCard.appendChild(mapBox);
 var jumpBox = document.createElement("div");
 resCard.appendChild(jumpBox);
 panel.appendChild(group);
@@ -1356,6 +1360,66 @@ spotBox.appendChild(light);
 spotBox.appendChild(document.createTextNode("Spotlight"));
 settings.insertBefore(spotBox, settings.firstChild);
 light.addEventListener("change", function () { queue(); });
+var mapLabel = document.createElement("label");
+mapLabel.className = "k s";
+var mapOn = document.createElement("input");
+mapOn.type = "checkbox";
+mapLabel.appendChild(mapOn);
+mapLabel.appendChild(document.createTextNode("Region map"));
+settings.insertBefore(mapLabel, spotBox.nextSibling);
+mapOn.addEventListener("change", function () {
+  tint = null;
+  mapDraw();
+  queue();
+});
+var REG = ["header", "nav", "main", "aside", "footer", "other"], REGC = ["#c2410c", "#9a3412", "#1f7a3f", "#5f564c", "#1e3a8a", "#7d756b"], LAND = { HEADER: "header", BANNER: "header", NAV: "nav", NAVIGATION: "nav", MAIN: "main", ASIDE: "aside", COMPLEMENTARY: "aside", FOOTER: "footer", CONTENTINFO: "footer" }, tint = null;
+function regionOf(e) {
+  for (var n = upOf(e); n && n.nodeType === 1; n = upOf(n)) {
+    var ro = n.getAttribute("role"), r = ro ? LAND[ro.split(" ")[0].toUpperCase()] : LAND[n.tagName];
+    if (r && !ro && /^(HEADER|FOOTER)$/.test(n.tagName) && n.parentElement && n.parentElement.closest("article,aside,main,nav,section,[role=article],[role=complementary],[role=main],[role=navigation],[role=region]")) r = null;
+    if (r) return [r, n];
+  }
+  return ["other", e];
+}
+function regions() {
+  var out = { header: 0, nav: 0, main: 0, aside: 0, footer: 0, other: 0 }, els = {};
+  stops.forEach(function (x) {
+    var r = regionOf(x);
+    out[r[0]]++;
+    (els[r[0]] = els[r[0]] || []).indexOf(r[1]) < 0 && els[r[0]].push(r[1]);
+  });
+  return [out, els];
+}
+function mapDraw() {
+  if (!mapOn) return;
+  while (mapBox.firstChild) mapBox.removeChild(mapBox.firstChild);
+  if (!mapOn.checked) return;
+  var r = regions(), bar = document.createElement("div"), bl = document.createElement("div");
+  count(stops.length, " stops, by region", false, false, mapBox);
+  bar.className = "bar";
+  bl.className = "bl";
+  REG.forEach(function (k, i) {
+    var n = r[0][k], name = k.charAt(0).toUpperCase() + k.slice(1);
+    if (!n) return;
+    var b = document.createElement("button"), sp = document.createElement("span"), em = document.createElement("em");
+    b.type = "button";
+    b.style.cssText = "flex:" + n + ";background:" + REGC[i];
+    b.setAttribute("aria-label", name + " " + n);
+    b.addEventListener("click", function () {
+      tint = [r[1][k], REGC[i]];
+      r[1][k][0].scrollIntoView({ block: "center", behavior: "smooth" });
+      queue();
+    });
+    bar.appendChild(b);
+    em.style.background = REGC[i];
+    sp.appendChild(em);
+    sp.appendChild(document.createTextNode(name + " " + n));
+    bl.appendChild(sp);
+  });
+  mapBox.appendChild(bar);
+  mapBox.appendChild(bl);
+  skipPanel();
+}
 chunk.addEventListener("change", function () { queue(); });
 function paged() { return chunk.checked && stops.length > PAGE; }
 function outT() { return skip.checked && !panelIn ? -1 : 0; }
@@ -2486,6 +2550,10 @@ function draw() {
     var t = el("text", { x: 0, y: 0, transform: "translate(" + (x + w / 2) + " " + (y + h / 2) + ")" + (v ? " rotate(-90)" : ""), fill: "#d0103a", stroke: "#fff", "stroke-width": 3, "paint-order": "stroke", "font-size": 11, "font-weight": 700, "font-family": "system-ui,sans-serif", "text-anchor": "middle", "dominant-baseline": "middle" }, under);
     t.textContent = runs(edges[ed]).map(span).join(", ");
   });
+  if (tint && mapOn.checked) tint[0].filter(function (m) { return m.isConnected; }).forEach(function (m) {
+    var q = m.getBoundingClientRect();
+    el("rect", { x: q.left, y: q.top, width: q.width, height: q.height, fill: tint[1], "fill-opacity": 0.12, stroke: tint[1], "stroke-width": 2, rx: 4 }, under);
+  });
   if (skipBad && skipBad.link.isConnected && page && !keep) {
     var ka = skipBad.link.getBoundingClientRect(), kt = skipBad.to && shown(skipBad.to) ? skipBad.to : mainRegion(), kb = kt ? kt.getBoundingClientRect() : null;
     var ax = Math.max(ka.left + sx, 13) + 14, ay = Math.max(ka.bottom + sy, 26) + 4, bx = kb ? kb.left + sx + 16 : ax + 160, by = kb ? Math.max(kb.top + sy + 16, ay + 40) : ay + 80;
@@ -3090,6 +3158,7 @@ var api = {
   },
   problems: function () { return problemsOf(openProbs()); },
   state: function () { return { walked: walkedN(), total: stops.length, done: !walking && walkEnd === "done" && stops.every(function (x) { return hidTested.has(x); }), untested: untested() }; },
+  regions: function () { return regions()[0]; },
   version: VERSION,
   close: function () { close(); }
 };

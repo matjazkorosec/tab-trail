@@ -10,6 +10,7 @@ declare global {
       report(): string;
       log(): Line[];
       state(): { walked: number; total: number; done: boolean; untested: string[] };
+      regions(): { header: number; nav: number; main: number; aside: number; footer: number; other: number };
       close(): void;
     };
   }
