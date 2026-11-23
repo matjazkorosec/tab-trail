@@ -48,6 +48,16 @@ test("No focus style skips a stop under the mouse", async ({ page }) => {
   expect(probs.map((p) => p.selector)).toEqual(["#bare"]);
 });
 
+test("No focus style ignores a stop Tab already left", async ({ page }) => {
+  await open(page, "no-focus-style.html");
+  await page.focus("#bare");
+  await page.keyboard.press("Tab");
+  await page.keyboard.press("Tab");
+  await page.waitForTimeout(800);
+  const probs = await page.evaluate(() => window.__tabTrail.problems());
+  expect(probs.map((p) => p.selector)).not.toContain("#color");
+});
+
 test("Ghost stop", async ({ page }) => {
   await open(page, "ghost-stop.html");
   await page.evaluate(() => window.__tabTrail.play({ delay: 50 }));
@@ -109,7 +119,8 @@ for (const [file, want, ok] of [
   ["no-way-out.html", ["No way out"], 0],
   ["way-out.html", [], 1],
   ["way-out.html#icon", [], 1],
-  ["way-out.html#class", [], 1],
+  ["way-out.html#class", ["Nameless stop"], 1],
+  ["way-out.html#svglabel", [], 1],
   ["native-dialog.html", [], 0],
 ] as const) {
   test("No way out: " + file, async ({ page, browserName }) => {
@@ -145,6 +156,26 @@ test("Play alone does not pass No way out", async ({ page }) => {
   await open(page, "way-out.html");
   await page.evaluate(() => window.__tabTrail.play({ delay: 50 }));
   expect((await page.evaluate(() => window.__tabTrail.state())).untested).toContain("No way out");
+});
+
+test("Nameless stop", async ({ page }) => {
+  await open(page, "nameless-stop.html");
+  await page.evaluate(() => window.__tabTrail.play({ delay: 50 }));
+  expect(await checks(page)).toEqual(["Nameless stop"]);
+  const probs = await page.evaluate(() => window.__tabTrail.problems());
+  expect(probs.map((p) => p.selector)).toEqual(["#ic1", "#ic2", "#img"]);
+  const lines = await page.evaluate(() => window.__tabTrail.log());
+  expect(lines.filter((l) => l.result === "INFO" && l.text.includes("3 links share the name Read more"))).toHaveLength(1);
+});
+
+test("Nameless stop clears when the stop gets a name", async ({ page, browserName }) => {
+  await open(page, "nameless-stop.html");
+  await page.evaluate(() => window.__tabTrail.play({ delay: 50 }));
+  await page.evaluate(() => document.getElementById("ic2")!.setAttribute("aria-label", "Cart"));
+  await page.focus("#ic1");
+  await press(page, browserName === "webkit" ? "Alt+Tab" : "Tab");
+  const probs = await page.evaluate(() => window.__tabTrail.problems());
+  expect(probs.map((p) => p.selector)).toEqual(["#ic1", "#img"]);
 });
 
 test("Out of order", async ({ page }) => {

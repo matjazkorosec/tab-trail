@@ -1023,7 +1023,8 @@ function check(s, then) {
       still = 0;
     } else still++;
     if (still < 2 && ++tries < 90) return requestAnimationFrame(look);
-    if (!late && ghostWhy(s)) {
+    var on = deep() === s;
+    if (on && !late && ghostWhy(s)) {
       late = 1;
       return setTimeout(function () {
         if (closed) return end();
@@ -1035,7 +1036,8 @@ function check(s, then) {
         look();
       }, 400);
     }
-    if (!ghostCheck(s)) ringCheck(s);
+    nameOne(s);
+    if (on && !ghostCheck(s)) ringCheck(s);
     tested(s);
     hidTested.add(s);
     if (ghosts.indexOf(s) >= 0) return end();
@@ -1146,7 +1148,42 @@ function exitOk(p) {
   });
   renderJumps();
 }
-function accName(e) { return label(e); }
+var nameOf = new WeakMap(), nameless = [], probName = new Map(), sameSaid = {}, ROLE = { A: "link", BUTTON: "button", SELECT: "combobox", TEXTAREA: "textbox", IFRAME: "frame", SUMMARY: "button" };
+function accName(e) {
+  var t = named(e) || (/^(INPUT|AREA)$/.test(e.tagName) && (e.alt || (/^(submit|reset)$/.test(e.type) && e.type))) || "";
+  if (!t.trim()) [].some.call(e.querySelectorAll("img[alt],[aria-label],svg title"), function (i) { return (t = i.getAttribute("alt") || i.getAttribute("aria-label") || i.textContent || "").trim(); });
+  return scrub(t).replace(/\s+/g, " ").trim();
+}
+function roleOf(e) { return e.getAttribute("role") || ROLE[e.tagName] || (e.tagName === "INPUT" ? (/^(checkbox|radio)$/.test(e.type) ? e.type : /^(submit|button|reset|image)$/.test(e.type) ? "button" : "textbox") : e.tagName.toLowerCase()); }
+function nameOne(s) {
+  var n = accName(s), was = nameless.indexOf(s) >= 0;
+  nameOf.set(s, n);
+  if (n && was) {
+    nameless.splice(nameless.indexOf(s), 1);
+    probName.get(s).fixed = true;
+    probName.delete(s);
+    renderJumps();
+    log("OK", "Nameless stop", [ref(s), " has a name now."]);
+  }
+  if (n || was || s.shadowRoot || /^(AUDIO|VIDEO|OBJECT|EMBED)$/.test(s.tagName)) return n;
+  nameless.push(s);
+  log("PROBLEM", "Nameless stop", [ref(s), " has no name, so a screen reader reads only \"" + roleOf(s) + "\"."], aiOf(W_NAME, "Every Tab stop has a name that says what it does.", "Add visible text, an aria-label, or alt text on its image.", [["Element", s, null, true]]));
+  probName.set(s, logs[logs.length - 1]);
+  return n;
+}
+function nameCheck() {
+  var by = {};
+  stops.forEach(function (s) {
+    var n = nameOne(s);
+    if (s.tagName === "A" && n) (by[n] = by[n] || {})[s.getAttribute("href")] = 1;
+  });
+  Object.keys(by).forEach(function (n) {
+    var k = Object.keys(by[n]).length;
+    if (k > 2 && !sameSaid[n]) log("INFO", "Nameless stop", [k + " links share the name " + n + ". That passes 2.4.4 when the text around each one tells them apart."]);
+    sameSaid[n] = sameSaid[n] || k > 2;
+  });
+  renderJumps();
+}
 function closer(p, ps) {
   return ps.filter(function (x) { return CLOSE.test(accName(x)) || /close|dismiss/i.test(x.id + " " + x.getAttribute("class")) || (x.matches("button:not([type]),[type=submit]") && x.closest("form[method=dialog]")); })[0] || null;
 }
@@ -1203,6 +1240,11 @@ function renderJumps() {
   if (noExit.length) {
     count(noExit.length, noExit.length === 1 ? " popup has no keyboard way out" : " popups have no keyboard way out", true, false, jumpBox);
     chipUl(jumpBox, noExit, function (x) { return popName(x[0]).l + ": Tab loops 1 to " + x[1]; }, function (x) { stopGo(stops.filter(function (y) { return within(x[0], y); })[0] || x[0]); });
+  }
+  var ml = nameless.filter(live);
+  if (ml.length) {
+    count(ml.length, ml.length === 1 ? " stop has no name for screen readers" : " stops have no name for screen readers", true, false, jumpBox);
+    chipUl(jumpBox, byStop(ml), stopName, stopGo);
   }
   if (noSkip) count(noSkip, " stops before the main content, and no skip link", true, false, jumpBox);
   if (gl.length) {
@@ -1446,8 +1488,8 @@ function browser() {
   if ((m = u.match(/Version\/(\d+)[^ ]* (Mobile\/\S+ )?Safari/))) return "Safari " + m[1];
   return u;
 }
-var CHECKS = ["Missed spots", "Hover menus", "Forced order", "Out of order", "Keyboard trap", "Hidden focus", "Lost focus", "No focus style", "Ghost stop", "Broken skip link", "No way out"];
-var WCAG = { "Missed spots": "2.1.1 A", "Hover menus": "2.1.1 A", "Out of order": "2.4.3 A", "Forced order": "2.4.3 A", "Keyboard trap": "2.1.2 A", "Lost focus": "2.4.3 A", "Hidden focus": "2.4.11 AA", "No focus style": "2.4.7 AA", "Ghost stop": "2.4.7 AA", "Broken skip link": "2.4.1 A", "No way out": "2.1.2 A" };
+var CHECKS = ["Missed spots", "Hover menus", "Forced order", "Out of order", "Keyboard trap", "Hidden focus", "Lost focus", "No focus style", "Ghost stop", "Broken skip link", "No way out", "Nameless stop"];
+var WCAG = { "Missed spots": "2.1.1 A", "Hover menus": "2.1.1 A", "Out of order": "2.4.3 A", "Forced order": "2.4.3 A", "Keyboard trap": "2.1.2 A", "Lost focus": "2.4.3 A", "Hidden focus": "2.4.11 AA", "No focus style": "2.4.7 AA", "Ghost stop": "2.4.7 AA", "Broken skip link": "2.4.1 A", "No way out": "2.1.2 A", "Nameless stop": "4.1.2 A" };
 function showUrl(f) { return "https://matjazkorosec.com/tools/tab-trail#show-" + f.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
 function ranChecks() {
   var out = [];
@@ -1517,6 +1559,7 @@ function review() {
   else if (stops.length !== lastStops) log("INFO", "Scan", ["Page changed: " + pl(stops.length, "stop", "stops") + " now, " + lastStops + " before."]);
   lastStops = stops.length;
   skipCheck();
+  nameCheck();
   cssBlocked.forEach(function (h) {
     if (seenCss.has(h)) return;
     seenCss.add(h);
@@ -1806,6 +1849,7 @@ function verifyOf(e) {
   if (e.f === "Forced order") return "Reload the page and run Tab trail again: " + el("Element") + " has no tabindex above 0, its stop number matches its place on the page, and the Forced order count goes down by 1.";
   if (e.f === "Hover menus") return "Press Tab until a link inside " + el("Element") + " has focus: the menu opens while focus is inside it, and Tab trail no longer lists it under hover menus.";
   if (e.f === "Hidden focus") return "Press Tab until " + el("Element") + " has focus: part of it shows next to " + el("Covered by") + ", and its Hidden focus line in the log says in view or partly covered.";
+  if (e.f === "Nameless stop") return "Hover the dot of " + el("Element") + " in Tab trail: it shows a name, not \"no name\".";
   if (e.f === "No way out") return "Open " + el("Popup") + " and press Tab until a Close button has focus, then Enter closes the popup.";
   if (e.f === "Broken skip link") return el("Element") ? "Reload the page, press Tab once and then Enter on " + el("Element") + ": the next Tab lands inside the main content." : "Reload the page and press Tab once: the first stop is a skip link, and Enter on it moves focus to the main content.";
   if (e.f === "Ghost stop") return a.crit === W_NAME ? "Reload the page and run Tab trail again: " + el("Element") + " is no longer inside aria-hidden, or Tab skips it, and the Ghost stop count goes down by 1." : "Press Tab until " + el("Element") + " has focus: it shows on screen, and its Ghost stop line in the log says OK.";
@@ -1824,7 +1868,7 @@ function coverage() {
   var pops = logs.filter(function (e) { return e.f === "Lost focus"; }).length;
   out.push("Lost focus: " + (pops ? "only " + pl(pops, "popup was", "popups were") : "no popups were") + " opened and closed in this run. Open and close every popup, menu and dialog on the page to check them all.");
   out.push("Window size: everything was tested at " + innerWidth + " x " + innerHeight + " only. Sticky bars, menus and popups can behave differently on phones; run it again in a window about 390 px wide.");
-  out.push("Not checked by Tab trail at all: how strong the focus change is (contrast, size: AAA), accessible names of buttons and links, color contrast of text, what a screen reader announces, and content inside iframes. Use axe DevTools or Lighthouse for names, contrast and iframes. Check focus visibility with Spotlight and screen reader output with VoiceOver or NVDA.");
+  out.push("Not checked by Tab trail at all: how strong the focus change is (contrast, size: AAA), accessible names of things Tab doesn't reach, color contrast of text, what a screen reader announces, and content inside iframes. Use axe DevTools or Lighthouse for names, contrast and iframes. Check focus visibility with Spotlight and screen reader output with VoiceOver or NVDA.");
   return out;
 }
 var probLog = [], ignore = [], CAP = 200, judgedDir = {};
@@ -2354,7 +2398,8 @@ function dotsIn(list, layer) {
   list.sort(function (a, b) { return (a[2] - 1 === current) - (b[2] - 1 === current); });
   list.forEach(function (d) {
     var big = d[2] > 99, on = d[2] - 1 === current;
-    var g = el("g", { class: "o", "data-i": d[2] - 1 }, layer);
+    var g = el("g", { class: "o", "data-i": d[2] - 1 }, layer), ds = stops[d[2] - 1];
+    if (ds) el("title", {}, g).textContent = d[2] + " \u00b7 " + roleOf(ds) + " \u00b7 " + (nameOf.get(ds) || "no name");
     if (on) el("circle", { cx: d[0], cy: d[1], r: big ? 19 : 17, fill: "none", stroke: "#ff8f57", "stroke-width": 4 }, g);
     if (d[3] && !on) el("circle", { cx: d[0], cy: d[1], r: big ? 14 : 12, fill: "#fff", stroke: "#1a1612", "stroke-width": 2, "stroke-dasharray": "4 3" }, g);
     else el("circle", { cx: d[0], cy: d[1], r: big ? 14 : 12, fill: on ? "#c2410c" : "#1a1612", stroke: "#fff", "stroke-width": 2 }, g);

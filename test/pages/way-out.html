@@ -31,6 +31,7 @@ pop.addEventListener("keydown", function (e) {
 var x = document.getElementById("x");
 if (location.hash === "#icon") x.textContent = "\u2715";
 if (location.hash === "#class") { x.textContent = ""; x.className = "close"; }
+if (location.hash === "#svglabel") x.innerHTML = "<svg aria-label=\"Close\" width=\"12\" height=\"12\"></svg>";
 document.getElementById("name").focus();
 </script>
 </body>
