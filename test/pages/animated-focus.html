@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="style.css">
+<title>Animated focus</title>
+<style>
+:focus { outline: none; }
+@keyframes slide { from { transform: translateX(0); } to { transform: translateX(40px); } }
+@keyframes glow { from { background-color: #fff; } to { background-color: #eee; } }
+.move { display: inline-block; animation: slide 0.9s linear infinite alternate; }
+.tint { display: inline-block; animation: glow 0.7s linear infinite alternate; }
+#ring:focus-visible { outline: 2px solid #c2410c; }
+p { margin: 0 0 16px; }
+</style>
+</head>
+<body>
+<main>
+<h1>Animated focus</h1>
+<p><a class="move" id="bare" href="#a">Bare</a></p>
+<p><a class="tint" id="tint" href="#b">Tint</a></p>
+<p><a class="move" id="ring" href="#c">Ring</a></p>
+</main>
+</body>
+</html>

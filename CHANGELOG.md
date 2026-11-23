@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Fix: No focus style ignores looping CSS animations, so repeated Play runs give the same count.
+
 ## 1.1.0 (2026-11-23)
 
 5 new checks and 2 new settings: focus you can see, skip links, popups with a way out, names, Tab cost, Region map.
