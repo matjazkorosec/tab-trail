@@ -25,7 +25,7 @@ Your bookmark keeps the version you dragged. To get new checks, delete it and dr
 ### Console
 
 <!-- console:start -->
-Copy [`dist/tab-trail.js`](https://raw.githubusercontent.com/matjazkorosec/tab-trail/v1.0.0/dist/tab-trail.js). On your site press F12, or Cmd+Option+I on a Mac (Cmd+Option+C in Safari), open Console and paste. If it asks, type allow pasting, press Enter, and paste again.
+Copy [`dist/tab-trail.js`](https://raw.githubusercontent.com/matjazkorosec/tab-trail/v1.1.0/dist/tab-trail.js). On your site press F12, or Cmd+Option+I on a Mac (Cmd+Option+C in Safari), open Console and paste. If it asks, type allow pasting, press Enter, and paste again.
 <!-- console:end -->
 
 <!-- firefox:start -->
@@ -73,7 +73,7 @@ While Tab trail is open, the page has `window.__tabTrail`, so a test or an AI ag
 - `window.__tabTrail.state()`: { walked, total, done, untested }. done is true once Play reached the end. untested names the checks that never ran, like Lost focus when no popup was opened, so a green test can tell a clean page from a check that was skipped.
 - `window.__tabTrail.cost(selector)`: With a CSS selector, the Tab presses from the top of the page to that element, or null if Tab never reaches it. Without one, the goals Tab cost finds: name, presses, how it was found, selector.
 - `window.__tabTrail.regions()`: How many stops sit in each region: { header, nav, main, aside, footer, other }.
-- `window.__tabTrail.version`: "1.0.0"
+- `window.__tabTrail.version`: "1.1.0"
 - `window.__tabTrail.close()`: Closes it.
 <!-- api:end -->
 
@@ -87,7 +87,7 @@ It fails when a check finds a problem, and attaches the whole report.
 Save the script in your repo once, so every CI run uses the version you tested:
 
 ```sh
-curl -o tests/tab-trail.js https://raw.githubusercontent.com/matjazkorosec/tab-trail/v1.0.0/dist/tab-trail.js
+curl -o tests/tab-trail.js https://raw.githubusercontent.com/matjazkorosec/tab-trail/v1.1.0/dist/tab-trail.js
 ```
 
 Then load it with `page.evaluate`, so a strict CSP or Trusted Types don't block it:

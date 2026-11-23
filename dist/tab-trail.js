@@ -1,5 +1,5 @@
 /*
- * Tab trail 1.0.0, https://matjazkorosec.com/tools/tab-trail
+ * Tab trail 1.1.0, https://matjazkorosec.com/tools/tab-trail
  *
  * MIT License
  *
@@ -24,8 +24,8 @@
  * SOFTWARE.
  */
 (function(){
-/* Tab trail 1.0.0. Copyright (c) 2026 Matjaž Korošec. MIT License, full text: https://github.com/matjazkorosec/tab-trail/blob/main/LICENSE */
-var VERSION = "1.0.0";
+/* Tab trail 1.1.0. Copyright (c) 2026 Matjaž Korošec. MIT License, full text: https://github.com/matjazkorosec/tab-trail/blob/main/LICENSE */
+var VERSION = "1.1.0";
 var ID = "tab-trail-host";
 var prev = [].filter.call(document.querySelectorAll("[id='" + ID + "']"), function (e) { return typeof e.__close === "function"; })[0];
 if (prev) { prev.__close(); return; }
