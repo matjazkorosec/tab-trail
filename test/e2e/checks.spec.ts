@@ -69,6 +69,42 @@ test("Ghost stop drops a stop that left the page", async ({ page }) => {
   await expect(page.locator("#tab-trail-host button.c", { hasText: "Clear, invisible" })).toHaveCount(1);
 });
 
+for (const [name, file, text] of [
+  ["Broken skip link", "skip-link.html", "#main is missing"],
+  ["No skip link", "no-skip-link.html", "16 stops before the main content"],
+] as const) {
+  test(name, async ({ page }) => {
+    await open(page, file);
+    await page.evaluate(() => window.__tabTrail.play({ delay: 50 }));
+    expect(await checks(page)).toEqual(["Broken skip link"]);
+    expect(await page.evaluate(() => window.__tabTrail.problems())).toHaveLength(1);
+    const lines = await page.evaluate(() => window.__tabTrail.log());
+    expect(lines.some((l) => l.result === "PROBLEM" && l.text.includes(text))).toBe(true);
+  });
+}
+
+test("No skip link stays red after a scroll", async ({ page }) => {
+  await open(page, "no-skip-link.html");
+  await page.evaluate(() => window.scrollTo(0, 2000));
+  await page.evaluate(() => document.querySelector("main")!.append(Object.assign(document.createElement("a"), { href: "#x", textContent: "New" })));
+  await page.waitForTimeout(1500);
+  expect(await checks(page)).toEqual(["Broken skip link"]);
+  const lines = await page.evaluate(() => window.__tabTrail.log());
+  expect(lines.filter((l) => l.check === "Broken skip link" && l.result !== "INFO").map((l) => l.text)).toEqual(["16 stops before the main content, and no skip link."]);
+});
+
+test("Footer stops are not before the main content", async ({ page }) => {
+  await open(page, "main-text.html");
+  await page.evaluate(() => window.__tabTrail.play({ delay: 50 }));
+  expect(await page.evaluate(() => window.__tabTrail.problems())).toEqual([]);
+});
+
+test("Header links are not skip links", async ({ page }) => {
+  await open(page, "header-links.html");
+  await page.evaluate(() => window.__tabTrail.play({ delay: 50 }));
+  expect(await page.evaluate(() => window.__tabTrail.problems())).toEqual([]);
+});
+
 test("Out of order", async ({ page }) => {
   await open(page, "out-of-order.html");
   await page.focus("#first");
