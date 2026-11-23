@@ -29,7 +29,7 @@ Copy [`dist/tab-trail.js`](https://raw.githubusercontent.com/matjazkorosec/tab-t
 <!-- console:end -->
 
 <!-- firefox:start -->
-Firefox can't store a bookmark longer than 65,536 characters, and the Tab trail bookmark is 273,982. In Firefox, paste the script in the console instead.
+Firefox can't store a bookmark longer than 65,536 characters, and the Tab trail bookmark is 275,215. In Firefox, paste the script in the console instead.
 <!-- firefox:end -->
 
 ### Playwright
@@ -66,7 +66,7 @@ Copy for AI copies only the problems, each with its WCAG rule, what should happe
 While Tab trail is open, the page has `window.__tabTrail`, so a test or an AI agent can run it with no clicks:
 
 <!-- api:start -->
-- `await window.__tabTrail.play({ ignore, delay })`: Walks every stop, or until it is paused, then gives back the report. Call it again to go on. ignore is a list of CSS selectors to leave out, like a part broken on purpose. delay is the wait at each stop, 400 ms if you leave it out. An ignore entry that isn't valid CSS makes it fail with an error.
+- `await window.__tabTrail.play({ ignore, delay, quiet })`: Walks every stop, or until it is paused, then gives back the report. Call it again to go on. ignore is a list of CSS selectors to leave out, like a part broken on purpose. delay is the wait at each stop, 400 ms if you leave it out. An ignore entry that isn't valid CSS makes it fail with an error. quiet: true puts the scroll and focus back where they were when it ends, so every mark it found shows on the page you started from.
 - `window.__tabTrail.problems()`: Every open problem as data, never cut short: id (the same on every run), check, wcag, selector, html, component, fix, verify.
 - `window.__tabTrail.report()`: The Copy for AI text.
 - `window.__tabTrail.log()`: Every Log line as data: time, result, check, wcag, text, fixed, selector, stop.

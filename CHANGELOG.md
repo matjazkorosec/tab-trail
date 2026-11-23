@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fix: No focus style ignores looping CSS animations, so repeated Play runs give the same count.
+- New: Check all, a second bookmark that checks every stop on open and puts the page back, and play({ quiet: true }).
 
 ## 1.1.0 (2026-11-23)
 

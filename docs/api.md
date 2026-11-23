@@ -2,9 +2,9 @@
 
 Generated from data/. Edit the files in data/, then run `npm run docs`.
 
-### `await window.__tabTrail.play({ ignore, delay })`
+### `await window.__tabTrail.play({ ignore, delay, quiet })`
 
-Walks every stop, or until it is paused, then gives back the report. Call it again to go on. ignore is a list of CSS selectors to leave out, like a part broken on purpose. delay is the wait at each stop, 400 ms if you leave it out. An ignore entry that isn't valid CSS makes it fail with an error.
+Walks every stop, or until it is paused, then gives back the report. Call it again to go on. ignore is a list of CSS selectors to leave out, like a part broken on purpose. delay is the wait at each stop, 400 ms if you leave it out. An ignore entry that isn't valid CSS makes it fail with an error. quiet: true puts the scroll and focus back where they were when it ends, so every mark it found shows on the page you started from.
 
 ### `window.__tabTrail.problems()`
 

@@ -82,7 +82,15 @@ Grab the panel and drag it anywhere, or press the corner button to move it to th
 
 [See it](https://matjazkorosec.com/tools/tab-trail#show-out-of-the-way)
 
-### 22 The count
+### 22 Check all
+
+A second bookmark that checks every stop on open.
+
+Check all is the same tool as a second bookmark. Click it and it walks every stop on its own, then puts the page back where it was, so every red mark is on screen at once, ready for a screenshot. Out of order, Keyboard trap, Lost focus and No way out still need your own Tab presses and popups.
+
+[See it](https://matjazkorosec.com/tools/tab-trail#show-check-all)
+
+### 23 The count
 
 Fix it, run it again, compare.
 
@@ -90,7 +98,7 @@ The panel counts the stops and the spots Tab skips. Fix something, run it again 
 
 [See it](https://matjazkorosec.com/tools/tab-trail#show-the-count)
 
-### 23 Find it
+### 24 Find it
 
 Click a red spot in the list to see it.
 
@@ -98,7 +106,7 @@ The panel lists every spot Tab never reaches, named by its label or text, 50 at 
 
 [See it](https://matjazkorosec.com/tools/tab-trail#show-find-it)
 
-### 24 Keyboard
+### 25 Keyboard
 
 No mouse? Ctrl+Shift+F jumps into the panel.
 
@@ -106,7 +114,7 @@ Press Ctrl+Shift+F, on a Mac and on Windows, and focus jumps to Play in the pane
 
 [See it](https://matjazkorosec.com/tools/tab-trail#show-keyboard)
 
-### 25 Jump there
+### 26 Jump there
 
 Click a number and focus moves there.
 
@@ -116,7 +124,7 @@ Click any number and focus moves to that spot, as if you had tabbed there. The n
 
 ## Settings
 
-### 26 Spotlight
+### 27 Spotlight
 
 Dim the page, light up where Tab is.
 
@@ -124,7 +132,7 @@ Open Settings and tick Spotlight: the page goes dark except what Tab is on, so y
 
 [See it](https://matjazkorosec.com/tools/tab-trail#show-spotlight)
 
-### 27 Tab cost
+### 28 Tab cost
 
 How many Tab presses to the goal?
 
@@ -132,7 +140,7 @@ Lists up to 3 goals with the Tab presses it takes to reach them: the main conten
 
 [See it](https://matjazkorosec.com/tools/tab-trail#show-tab-cost)
 
-### 28 Region map
+### 29 Region map
 
 Where do the Tab presses go?
 
@@ -140,7 +148,7 @@ Counts the stops in the header, navigation, main content, sidebar and footer, as
 
 [See it](https://matjazkorosec.com/tools/tab-trail#show-region-map)
 
-### 29 Show lines
+### 30 Show lines
 
 Just the numbers? Untick Show lines.
 
@@ -148,7 +156,7 @@ Open Settings and untick Show lines, and only the numbered dots stay. Long lines
 
 [See it](https://matjazkorosec.com/tools/tab-trail#show-show-lines)
 
-### 30 Long lines
+### 31 Long lines
 
 Too many lines? Untick Long lines.
 
@@ -156,7 +164,7 @@ Open Settings, untick Long lines, and no line is over 100 px. A longer one becom
 
 [See it](https://matjazkorosec.com/tools/tab-trail#show-long-lines)
 
-### 31 Out of Tab
+### 32 Out of Tab
 
 The panel stays out of the trail.
 
