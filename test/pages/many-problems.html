@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="style.css">
+<title>Many problems</title>
+<style>
+nav a { display: inline-block; margin-right: 12px; }
+#off { position: fixed; top: 0; left: 100%; width: 200px; }
+#off a { display: block; }
+#bare:focus { outline: none; }
+.pointer { cursor: pointer; }
+.menu { position: relative; display: inline-block; }
+.menu ul { display: none; position: absolute; left: 0; top: 100%; margin: 0; padding: 8px; list-style: none; background: #fff; }
+.menu:hover ul { display: block; }
+p { margin: 0 0 16px; }
+</style>
+</head>
+<body>
+<header><nav><a href="#n1">Link 1</a><a href="#n2">Link 2</a><a href="#n3">Link 3</a><a href="#n4">Link 4</a><a href="#n5">Link 5</a><a href="#n6">Link 6</a><a href="#n7">Link 7</a><a href="#n8">Link 8</a><a href="#n9">Link 9</a><a href="#n10">Link 10</a><a href="#n11">Link 11</a><a href="#n12">Link 12</a><a href="#n13">Link 13</a><a href="#n14">Link 14</a><a href="#n15">Link 15</a><a href="#n16">Link 16</a></nav></header>
+<aside id="off"><a href="#o1">One</a></aside>
+<main>
+<h1>Many problems</h1>
+<p><span role="button" class="pointer">Add to cart</span></p>
+<div class="menu">
+<span>Menu</span>
+<ul>
+<li><button type="button" tabindex="-1">Profile</button></li>
+</ul>
+</div>
+<p><button id="empty" type="button"></button></p>
+<p><a id="bare" href="#bare">Bare</a></p>
+<p><label>First <input type="text" id="first"></label>
+<label>Second <input type="text" id="second"></label>
+<label>Third <input type="text" id="third"></label>
+<label>Fourth <input type="text" id="fourth" tabindex="1"></label></p>
+<p><label>Message <input type="text" id="trap"></label></p>
+</main>
+<script>
+document.getElementById("first").addEventListener("keydown", function (e) {
+  if (e.key !== "Tab" || e.shiftKey) return;
+  e.preventDefault();
+  document.getElementById("third").focus();
+});
+document.getElementById("trap").addEventListener("keydown", function (e) {
+  if (e.key === "Tab") e.preventDefault();
+});
+</script>
+</body>
+</html>
