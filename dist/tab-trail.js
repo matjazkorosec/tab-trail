@@ -427,6 +427,9 @@ style.textContent = [
   ".ckw{flex:1}.seg{display:flex;height:8px;border-radius:4px;overflow:hidden}.seg i{flex:0 0 0}.sp{background:#1f7a3f}.sf{background:#d0103a}.sq{background:#c9c0b0}",
   ".ckt{display:block;margin-top:4px;font-size:13px;font-weight:400;color:#5f564c}.ckt .g{color:#1f7a3f}.ckt .e{color:#d0103a}.ck .sm{margin-top:8px}",
   ".fx:not(:has(>div:not(:empty))){display:none}",
+  ".qm{font-weight:800;font-size:14px}.qm[aria-expanded=true]{background:#1a1612;color:#fbf8f3}",
+  ".hp{position:absolute;top:42px;right:6px;z-index:2;width:270px;padding:10px 12px;background:#fbf8f3;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.28)}",
+  ".hh{margin:0;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#5f564c}.hp .so{padding:0 0 8px}",
   ".so,.lbd,.la{padding:1px 10px 8px}",
   ".lbd{overflow:hidden}",
   ".so>.k:first-child,.lbd>:first-child,.la>:first-child{margin-top:0}",
@@ -1684,40 +1687,26 @@ var ver = document.createElement("span");
 ver.className = "vr";
 ver.textContent = "v" + VERSION;
 how.appendChild(ver);
-how.appendChild(document.createTextNode("How to use & latest version: "));
 how.appendChild(a);
-var keysBtn = document.createElement("button");
-keysBtn.className = "sg";
-keysBtn.type = "button";
-keysBtn.setAttribute("aria-expanded", "false");
-icon(keysBtn, 16, "M1.5 4.5h13v7h-13zM4 7h1M7.5 7h1M11 7h1M5 9.5h6", 1.6);
-keysBtn.appendChild(document.createTextNode("Shortcuts"));
-keysBtn.appendChild(document.createElement("i"));
-tray.insertBefore(keysBtn, gear);
-var keysBox = document.createElement("div");
-keysBox.className = "so";
-keysBox.hidden = true;
-tray.insertBefore(keysBox, gear);
+var helpBtn = mk("button", "b qm", null, "?"), helpBox = mk("div", "hp", panel);
+helpBtn.type = "button";
+helpBtn.setAttribute("aria-label", "Legend and shortcuts");
+helpBtn.setAttribute("aria-expanded", "false");
+bar.insertBefore(helpBtn, corner);
+helpBox.hidden = true;
+mk("p", "hh", helpBox, "Legend");
+helpBox.appendChild(legend);
+legend.hidden = false;
+mk("p", "hh", helpBox, "Shortcuts");
 [[KEYS + ":", " into this panel"], ["Escape:", " back to the page"], ["Tab, Shift+Tab:", " along the trail"], ["Space or Escape:", " pause Play"]].forEach(function (k) {
-  keysBox.appendChild(line("k", k[0], k[1]));
+  helpBox.appendChild(line("k", k[0], k[1]));
 });
-keysBtn.addEventListener("click", function () {
-  keysBox.hidden = !keysBox.hidden;
-  keysBtn.setAttribute("aria-expanded", keysBox.hidden ? "false" : "true");
-});
-var legendBtn = document.createElement("button");
-legendBtn.className = "sg";
-legendBtn.type = "button";
-legendBtn.setAttribute("aria-expanded", "false");
-icon(legendBtn, 16, "M3 4h1M6.5 4H13M3 8h1M6.5 8H13M3 12h1M6.5 12H13", 1.6);
-legendBtn.appendChild(document.createTextNode("Legend"));
-legendBtn.appendChild(document.createElement("i"));
-tray.insertBefore(legendBtn, keysBtn);
-tray.insertBefore(legend, keysBtn);
-legendBtn.addEventListener("click", function () {
-  legend.hidden = !legend.hidden;
-  legendBtn.setAttribute("aria-expanded", legend.hidden ? "false" : "true");
-});
+function help(on) {
+  helpBox.hidden = !on;
+  helpBtn.setAttribute("aria-expanded", on);
+}
+helpBtn.addEventListener("click", function () { help(helpBox.hidden); });
+panel.addEventListener("pointerdown", function (e) { if (!helpBox.hidden && !helpBox.contains(e.target) && !helpBtn.contains(e.target)) help(false); });
 tray.appendChild(how);
 var logs = [], logFilter = "all", logOpen = false, LOG_MAX = 500, showWcag = false, wcagBoxes = [];
 function wcagBox(parent, doc) {
@@ -2621,14 +2610,14 @@ logBtn.addEventListener("click", function () {
 });
 tray.insertBefore(logGroup, tray.firstChild);
 logGroup.className = "lgp sec";
-[[legendBtn, legend], [keysBtn, keysBox], [gear, settings]].forEach(function (p) {
+[[gear, settings]].forEach(function (p) {
   var w = document.createElement("div");
   w.className = "sec";
   tray.insertBefore(w, p[0]);
   w.appendChild(p[0]);
   w.appendChild(p[1]);
 });
-[logBtn, legendBtn, keysBtn, gear].forEach(function (b) {
+[logBtn, gear].forEach(function (b) {
   var g = b.querySelector("svg"), t = document.createElement("span");
   t.className = "ic";
   b.insertBefore(t, g);
@@ -3304,6 +3293,7 @@ function key(e) {
     var ep = openPop;
     setTimeout(function () { if (!closed && openPop === ep && !gone(ep)) log("INFO", "No way out", [popName(ep), ": Escape did not close it. WCAG 2.2 AA does not require Escape when Tab reaches a close button; it is a best practice (ARIA APG)."]); }, 300);
   }
+  if (e.key === "Escape" && !helpBox.hidden && inPanel()) return help(false);
   if (e.key === "Escape" && !modal() && !(openPop && !gone(openPop)) && (onBody || inPanel())) close();
   if (e.key === "Tab") {
     endPress();

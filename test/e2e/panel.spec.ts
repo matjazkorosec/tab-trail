@@ -182,3 +182,16 @@ test("problem tile and checks bar sum up the run", async ({ page }) => {
   await host.locator(".ckh").click();
   await expect(host.locator(".sm")).toContainText("12 checks: 7 passed, 1 found a problem, 4 not tested.");
 });
+
+test("? button shows Legend and Shortcuts, and Escape closes only the card", async ({ page }) => {
+  await open(page, "clean.html");
+  const host = page.locator("#tab-trail-host");
+  await expect(host.locator("button.sg", { hasText: /Legend|Shortcuts/ })).toHaveCount(0);
+  await expect(host.locator(".hp")).toBeHidden();
+  await host.locator("button.qm").click();
+  await expect(host.locator(".hp")).toContainText("The order Tab visits");
+  await expect(host.locator(".hp")).toContainText("into this panel");
+  await page.keyboard.press("Escape");
+  await expect(host.locator(".hp")).toBeHidden();
+  await expect(host).toHaveCount(1);
+});
