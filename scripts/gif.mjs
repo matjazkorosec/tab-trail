@@ -35,8 +35,14 @@ try {
   await page.addStyleTag({
     content: "nextjs-portal,button[aria-label=\"Show audience switcher\"]{display:none!important}main{padding-top:24px!important}html{scrollbar-width:none}html::-webkit-scrollbar{display:none}",
   });
-  const start = (Date.now() - t0) / 1000;
-  await page.waitForTimeout(3000);
+  const ready = Date.now();
+  const press = () => page.waitForFunction(() => !!document.querySelector('svg [fill="#ffc9a8"]'), null, { polling: "raf", timeout: 30000 });
+  await press();
+  while (Date.now() - ready < 3700) {
+    await page.waitForFunction(() => !document.querySelector('svg [fill="#ffc9a8"]'), null, { polling: "raf", timeout: 30000 });
+    await press();
+  }
+  const start = (Date.now() - t0) / 1000 - 3.7;
   await page.evaluate(readFileSync(join(root, "dist/tab-trail.js"), "utf8"));
   await page.waitForFunction(() => !!window.__tabTrail);
   await page.waitForTimeout(1500);
