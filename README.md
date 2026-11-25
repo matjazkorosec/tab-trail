@@ -1,4 +1,4 @@
-<p align="center"><img src=".github/assets/trail.gif" width="960" alt="Tab trail running on its own page, matjazkorosec.com/tools/tab-trail. The panel opens with 3 problems, 23 Tab stops and 2 skipped, then lists the problems: Missed spots, 2 spots that look clickable but Tab skips (Add to cart, Send), and Hover menus, 1 menu that opens only on mouse hover. Then the orange ring follows 5 Tab presses along numbered dots joined by lines."></p>
+<p align="center"><img src=".github/assets/trail.gif" width="960" alt="Tab trail running on its own page, matjazkorosec.com/tools/tab-trail. The panel opens with 3 problems, 23 Tab stops and 2 skipped, then lists the problems: Missed spots, 2 spots that look clickable but Tab skips (Add to cart, Send), and Hover menus, 1 menu that opens only on mouse hover. Then the orange ring follows 5 Tab presses along numbered dots joined by lines. Below, Add to cart, Send and Menu have red dashed boxes."></p>
 
 # Tab trail
 
