@@ -31,7 +31,7 @@ Copy [`dist/tab-trail.js`](https://raw.githubusercontent.com/matjazkorosec/tab-t
 <!-- console:end -->
 
 <!-- firefox:start -->
-Firefox can't store a bookmark longer than 65,536 characters, and the Tab trail bookmark is 284,241. In Firefox, paste the script in the console instead.
+Firefox can't store a bookmark longer than 65,536 characters, and the Tab trail bookmark is 285,836. In Firefox, paste the script in the console instead.
 <!-- firefox:end -->
 
 ### Playwright

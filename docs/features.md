@@ -124,7 +124,15 @@ Click any number and focus moves to that spot, as if you had tabbed there. The n
 
 ## Settings
 
-### 27 Spotlight
+### 27 Turbo play
+
+Play waits 80 ms at each stop, not 400 ms.
+
+Open Settings and switch on Turbo play: Play still waits for focus to settle and judges each stop the same way, then moves on after 80 ms instead of 400 ms. It is off when Tab trail opens.
+
+[See it](https://matjazkorosec.com/tools/tab-trail#show-turbo-play)
+
+### 28 Spotlight
 
 Dim the page, light up where Tab is.
 
@@ -132,7 +140,7 @@ Open Settings and tick Spotlight: the page goes dark except what Tab is on, so y
 
 [See it](https://matjazkorosec.com/tools/tab-trail#show-spotlight)
 
-### 28 Tab cost
+### 29 Tab cost
 
 How many Tab presses to the goal?
 
@@ -140,7 +148,7 @@ Lists up to 3 goals with the Tab presses it takes to reach them: the main conten
 
 [See it](https://matjazkorosec.com/tools/tab-trail#show-tab-cost)
 
-### 29 Region map
+### 30 Region map
 
 Where do the Tab presses go?
 
@@ -148,7 +156,7 @@ Counts the stops in the header, navigation, main content, sidebar and footer, as
 
 [See it](https://matjazkorosec.com/tools/tab-trail#show-region-map)
 
-### 30 Show lines
+### 31 Show lines
 
 Just the numbers? Untick Show lines.
 
@@ -156,7 +164,7 @@ Open Settings and untick Show lines, and only the numbered dots stay. Long lines
 
 [See it](https://matjazkorosec.com/tools/tab-trail#show-show-lines)
 
-### 31 Long lines
+### 32 Long lines
 
 Too many lines? Untick Long lines.
 
@@ -164,7 +172,7 @@ Open Settings, untick Long lines, and no line is over 100 px. A longer one becom
 
 [See it](https://matjazkorosec.com/tools/tab-trail#show-long-lines)
 
-### 32 Out of Tab
+### 33 Out of Tab
 
 The panel stays out of the trail.
 

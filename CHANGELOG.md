@@ -4,6 +4,7 @@
 
 - Panel: the problem count and the problems come first, grouped by WCAG level AA then A. What was checked folds into a bar below them.
 - Panel: Legend and Shortcuts open from a ? button in the title bar, and the footer is 1 line.
+- New: Turbo play in Settings. Play waits 80 ms at each stop instead of 400 ms and finds the same problems.
 
 ## 1.2.0 (2026-11-23)
 
