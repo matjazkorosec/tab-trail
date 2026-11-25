@@ -197,13 +197,20 @@ test("? button shows Legend and Shortcuts, and Escape closes only the card", asy
 });
 
 test("Turbo play walks faster and finds the same problems", async ({ page }) => {
+  await page.addInitScript(() => {
+    const t = window.setTimeout;
+    (window as any).__delays = [];
+    window.setTimeout = ((f: any, ms?: number, ...a: any[]) => { (window as any).__delays.push(ms); return t(f, ms, ...a); }) as any;
+  });
   await open(page, "no-focus-style.html");
   const host = page.locator("#tab-trail-host");
   await host.locator("button.sg", { hasText: "Settings" }).click();
   await host.locator("button.tg").click();
   await expect(host.locator("button.tg")).toHaveAttribute("aria-checked", "true");
   await host.locator("button.pl").click();
-  await expect.poll(() => page.evaluate(() => window.__tabTrail.state().done), { timeout: 2500 }).toBe(true);
+  await expect.poll(() => page.evaluate(() => window.__tabTrail.state().done), { timeout: 15000 }).toBe(true);
   const probs = await page.evaluate(() => window.__tabTrail.problems());
   expect(probs.map((p) => p.selector)).toEqual(["#bare"]);
+  const delays = await page.evaluate(() => (window as any).__delays);
+  expect(delays).toContain(80);
 });
