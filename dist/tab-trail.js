@@ -1517,7 +1517,11 @@ turbo.type = "button";
 turbo.setAttribute("role", "switch");
 turbo.setAttribute("aria-checked", "false");
 turbo.setAttribute("aria-label", "Turbo play");
-turbo.addEventListener("click", function () { turbo.setAttribute("aria-checked", turbo.getAttribute("aria-checked") !== "true"); });
+turbo.addEventListener("click", function () {
+  var on = turbo.getAttribute("aria-checked") !== "true";
+  turbo.setAttribute("aria-checked", on);
+  if (walking && !quietBack) walkDelay = on ? 80 : 400;
+});
 settings.insertBefore(turboRow, settings.firstChild);
 var picked = null, picking = false, pickAt = null, costGoals = [], PICKS = ["pointermove", "pointerdown", "mousedown", "pointerup", "mouseup", "click", "auxclick", "dblclick", "contextmenu"], GOALW = /(^|[^a-z\u010d\u0161\u017e])(add to cart|buy|checkout|book|reserve|subscribe|sign up|register|download|contact|get started|donate|v ko\u0161arico|kupi|naro\u010di|rezerviraj|prijava|naro\u010di se|prenesi|kontakt)(?![a-z\u010d\u0161\u017e])/i;
 function mainStop() {

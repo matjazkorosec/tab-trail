@@ -128,7 +128,7 @@ Click any number and focus moves to that spot, as if you had tabbed there. The n
 
 Play waits 80 ms at each stop, not 400 ms.
 
-Open Settings and switch on Turbo play: Play still waits for focus to settle and judges each stop the same way, then moves on after 80 ms instead of 400 ms. It is off when Tab trail opens.
+Open Settings and switch on Turbo play: Play still waits for focus to settle and judges each stop the same way, then moves on after 80 ms instead of 400 ms. Switch it while Play is running and the next stops use the new speed. It is off when Tab trail opens.
 
 [See it](https://matjazkorosec.com/tools/tab-trail#show-turbo-play)
 
