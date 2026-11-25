@@ -2983,6 +2983,9 @@ function step(s) {
   }
   endPress();
   if (s !== deep()) rest(s);
+  faking = true;
+  ["keydown", "keyup"].forEach(function (t) { document.dispatchEvent(new KeyboardEvent(t, { key: "Tab", code: "Tab", bubbles: true, composed: true })); });
+  faking = false;
   s.focus({ focusVisible: true });
   focus();
   walked.add(s);
@@ -3241,7 +3244,9 @@ function back() {
     if (a && a.blur) a.blur();
   }
 }
+var faking = false;
 function key(e) {
+  if (faking) return;
   if (picking && e.key === "Escape" && e.isTrusted) {
     e.preventDefault();
     e.stopPropagation();

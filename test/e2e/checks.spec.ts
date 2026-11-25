@@ -39,6 +39,16 @@ test("No focus style", async ({ page }) => {
   expect(probs[0].wcag).toBe("2.4.7 AA");
 });
 
+test("No focus style trusts a page that hides focus after a mouse click", async ({ page }) => {
+  await open(page, "focus-modality.html");
+  await page.mouse.click(5, 300);
+  await page.evaluate(() => window.__tabTrail.play({ delay: 50 }));
+  const state = await page.evaluate(() => window.__tabTrail.state());
+  expect(state.walked).toBe(state.total);
+  const probs = await page.evaluate(() => window.__tabTrail.problems());
+  expect(probs.filter((p) => p.check === "No focus style").map((p) => p.selector)).toEqual(["#bare"]);
+});
+
 test("No focus style judges animated stops the same on every run", async ({ page }) => {
   await open(page, "animated-focus.html");
   for (const delay of [50, 137, 263, 50]) {

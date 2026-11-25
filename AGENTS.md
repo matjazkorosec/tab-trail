@@ -18,7 +18,7 @@ Tab trail is a bookmarklet that draws every Tab stop on a page and marks in red 
 - Plain JavaScript. Add no runtime dependencies.
 - No template literals (backticks) in `src/`. The bookmark is a `javascript:` URL.
 - Keep everything the tool draws inside its shadow root.
-- Only move focus. Never call `click()` on the host page.
+- Only move focus, plus the Tab key event Play sends before each stop. Never call `click()` on the host page.
 - No network requests, no cookies, no `localStorage` or `sessionStorage`.
 - Write no code comments.
 - No em dashes or en dashes anywhere. Use a period, comma, colon or "to".

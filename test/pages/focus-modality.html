@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="style.css">
+<title>Focus modality</title>
+<style>
+a:focus-visible, button:focus-visible { outline: 2px solid #c2410c; }
+#bare:focus { outline: none; }
+:root[data-focus-modality="pointer"] :is(button, a, [tabindex]):focus { outline: none !important; }
+</style>
+<script>
+addEventListener("pointerdown", function () { document.documentElement.dataset.focusModality = "pointer"; }, true);
+addEventListener("keydown", function (e) { if (e.key === "Tab") document.documentElement.dataset.focusModality = "keyboard"; }, true);
+</script>
+</head>
+<body>
+<main>
+<h1>Focus modality</h1>
+<p><a id="one" href="#a">One</a> <a id="two" href="#b">Two</a> <button id="three" type="button">Three</button> <a id="bare" href="#c">Bare</a></p>
+</main>
+</body>
+</html>

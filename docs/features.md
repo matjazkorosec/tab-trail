@@ -8,7 +8,7 @@ Generated from data/. Edit the files in data/, then run `npm run docs`.
 
 No Tab key? Press Play, it walks every stop.
 
-Play moves focus through every stop for you and checks each one, then 1 line sums up all 12 checks. It only moves focus, it never clicks.
+Play moves focus through every stop for you and checks each one, then 1 line sums up all 12 checks. It only moves focus, it never clicks. Before each stop it sends the page a Tab key event, so pages that hide focus after a mouse click show it.
 
 [See it](https://matjazkorosec.com/tools/tab-trail#show-play-it)
 
