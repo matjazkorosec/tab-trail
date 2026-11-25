@@ -32,7 +32,7 @@ How many stops sit in each region: { header, nav, main, aside, footer, other }.
 
 ### `window.__tabTrail.version`
 
-"1.2.0"
+"1.3.0"
 
 ### `window.__tabTrail.close()`
 

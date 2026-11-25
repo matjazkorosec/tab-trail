@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 1.3.0 (2026-11-25)
+
+The problems come first in the panel, Turbo play walks 5 times faster, and No focus style trusts pages that hide focus after a click.
+
 - Fix: No focus style no longer marks every link red when Play runs on a page that hides focus after a mouse click.
 - Panel: the problem count and the problems come first, grouped by WCAG level AA then A. What was checked folds into a bar below them.
 - Panel: Legend and Shortcuts open from a ? button in the title bar, and the footer is 1 line.
