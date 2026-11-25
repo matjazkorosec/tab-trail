@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { test, expect } from "@playwright/test";
-import { open } from "./load";
+import { open, press } from "./load";
 
 const { version } = JSON.parse(readFileSync(new URL("../../package.json", import.meta.url), "utf8"));
 
@@ -144,4 +144,41 @@ test("play({ quiet: true }) puts focus and scroll back", async ({ page }) => {
   expect(await page.evaluate(() => document.activeElement && document.activeElement.id)).toBe("ok");
   expect(await page.evaluate(() => scrollY)).toBe(y);
   expect(await page.evaluate(() => window.__tabTrail.state().done)).toBe(true);
+});
+
+test("panel lists problems by WCAG level, AA first, and closes A when there are many", async ({ page }) => {
+  await open(page, "many-problems.html");
+  await page.evaluate(() => window.__tabTrail.play({ delay: 50 }));
+  const host = page.locator("#tab-trail-host");
+  await expect(host.locator(".lvh")).toHaveText([/^Level AA/, /^Level A /]);
+  await expect(host.locator(".gh", { hasText: "No focus style" })).toHaveAttribute("aria-expanded", "true");
+  await expect(host.locator(".gh", { hasText: "Nameless stop" })).toHaveAttribute("aria-expanded", "false");
+  await expect(host.locator(".pbx")).not.toHaveClass(/scr/);
+  await host.locator(".gh", { hasText: "Nameless stop" }).click();
+  await expect(host.locator(".gh", { hasText: "Nameless stop" })).toHaveAttribute("aria-expanded", "true");
+  await expect(host.locator("button.c", { hasText: "Button" })).toBeVisible();
+});
+
+test("panel scrolls the problems when more than 8 checks fail", async ({ page }) => {
+  await open(page, "many-problems.html");
+  await page.evaluate(() => window.__tabTrail.play({ delay: 50 }));
+  await page.focus("#first");
+  await press(page, "Tab");
+  await page.focus("#trap");
+  await press(page, "Tab");
+  await press(page, "Shift+Tab");
+  await expect(page.locator("#tab-trail-host .gh")).toHaveCount(9);
+  await expect(page.locator("#tab-trail-host .pbx")).toHaveClass(/scr/);
+});
+
+test("problem tile and checks bar sum up the run", async ({ page }) => {
+  await open(page, "no-focus-style.html");
+  const host = page.locator("#tab-trail-host");
+  await expect(host.locator(".ck")).toBeHidden();
+  await page.evaluate(() => window.__tabTrail.play({ delay: 50 }));
+  await expect(host.locator(".ti").first()).toHaveText("1problem");
+  await expect(host.locator(".ckt")).toHaveText("7 passed · 1 failed · 4 not tested");
+  await expect(host.locator(".sm")).toBeHidden();
+  await host.locator(".ckh").click();
+  await expect(host.locator(".sm")).toContainText("12 checks: 7 passed, 1 found a problem, 4 not tested.");
 });

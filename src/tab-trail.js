@@ -385,6 +385,23 @@ style.textContent = [
   ".bg:not(:empty)+i{margin-left:12px}",
   ".sg i{margin-left:auto;width:7px;height:7px;border-right:2px solid #1a1612;border-bottom:2px solid #1a1612;transform:translate(-3px,-2px) rotate(45deg)}",
   ".sg[aria-expanded=true] i{transform:translate(-3px,2px) rotate(225deg)}",
+  ".trk{flex:1;min-width:24px;height:6px;border-radius:3px;background:#e4dccd;overflow:hidden}.trk i{display:block;height:100%;background:#1a1612}.trk+span{white-space:nowrap}",
+  ".tl{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:4px;margin-top:4px}.ti{margin:0;padding:7px 10px;background:#fbf8f3;border-radius:10px}",
+  ".ti b{display:block;font-size:26px;font-weight:800;line-height:1.1}.ti span{font-size:12px;font-weight:600;color:#5f564c}",
+  ".ti.e{background:#d0103a}.ti.ok{background:#1f7a3f}.ti.e,.ti.ok,.ti.e span,.ti.ok span{color:#fff}",
+  ".scr{max-height:340px;overflow-y:auto;overscroll-behavior:contain}[hidden]{display:none!important}",
+  ".lvh{margin:0;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#5f564c}",
+  ".gk{margin-top:6px}.gk+.gk{margin:8px -10px 0;padding:8px 10px 0;border-top:1px solid #e4dccd}",
+  ".gh,.ckh{all:unset;display:flex;align-items:center;gap:8px;width:100%;font-weight:700;cursor:pointer}",
+  ".gh:focus-visible,.ckh:focus-visible{outline:3px solid #c2410c;outline-offset:2px}",
+  ".nb{min-width:14px;padding:2px 5px;border-radius:6px;background:#d0103a;color:#fff;text-align:center;font-size:13px}",
+  ".wl{padding:1px 6px;border-radius:5px;background:#efe8dc;color:#5f564c;font-size:11px}",
+  ".gh i,.ckh>i{margin-left:auto;flex:none;width:7px;height:7px;border:solid #1a1612;border-width:0 2px 2px 0;transform:translate(-3px,-2px) rotate(45deg)}",
+  "[aria-expanded=true]>i{transform:translate(-3px,2px) rotate(225deg)}",
+  ".gv,.gb{margin:2px 0 0 32px;font-size:13px;color:#5f564c}.gv{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.gs{margin:0}",
+  ".ckw{flex:1}.seg{display:flex;height:8px;border-radius:4px;overflow:hidden}.seg i{flex:0 0 0}.sp{background:#1f7a3f}.sf{background:#d0103a}.sq{background:#c9c0b0}",
+  ".ckt{display:block;margin-top:4px;font-size:13px;font-weight:400;color:#5f564c}.ckt .g{color:#1f7a3f}.ckt .e{color:#d0103a}.ck .sm{margin-top:8px}",
+  ".fx:not(:has(>div:not(:empty))){display:none}",
   ".so,.lbd,.la{padding:1px 10px 8px}",
   ".lbd{overflow:hidden}",
   ".so>.k:first-child,.lbd>:first-child,.la>:first-child{margin-top:0}",
@@ -594,7 +611,10 @@ play.appendChild(playWord);
 play.addEventListener("mousedown", function (e) { e.preventDefault(); });
 var playText = document.createElement("span");
 playText.textContent = "Visits every stop for you";
+var playTrack = mk("span", "trk"), playFill = mk("i", "", playTrack);
+playTrack.hidden = true;
 playRow.appendChild(play);
+playRow.appendChild(playTrack);
 playRow.appendChild(playText);
 playCard.appendChild(playRow);
 var AI_ICON = "M3.5 5.5h9v8h-9zM8 5.5V3.2M8 1.9v.1M6 8.6v1.1M10 8.6v1.1M6.3 11.6h3.4M1.8 8.5v2.6M14.2 8.5v2.6", COPY_ICON = "M10.5 5.5V3a.5.5 0 0 0-.5-.5H3a.5.5 0 0 0-.5.5v7a.5.5 0 0 0 .5.5h2.5M5.5 5.5h8v8h-8z";
@@ -607,15 +627,89 @@ aiBtn.addEventListener("click", function () { copyIt(aiBtn, window, aiText(), "C
 bar.appendChild(aiBtn);
 bar.appendChild(corner);
 bar.appendChild(x);
-var sumLine = document.createElement("p");
-sumLine.className = "sm";
-sumLine.hidden = true;
-playCard.appendChild(sumLine);
-var resCard = document.createElement("div");
-resCard.className = "cd";
-panel.appendChild(resCard);
-var info = document.createElement("div");
-resCard.appendChild(info);
+var CHECKS = ["Missed spots", "Hover menus", "Forced order", "Out of order", "Keyboard trap", "Hidden focus", "Lost focus", "No focus style", "Ghost stop", "Broken skip link", "No way out", "Nameless stop"];
+var WCAG = { "Missed spots": "2.1.1 A", "Hover menus": "2.1.1 A", "Out of order": "2.4.3 A", "Forced order": "2.4.3 A", "Keyboard trap": "2.1.2 A", "Lost focus": "2.4.3 A", "Hidden focus": "2.4.11 AA", "No focus style": "2.4.7 AA", "Ghost stop": "2.4.7 AA", "Broken skip link": "2.4.1 A", "No way out": "2.1.2 A", "Nameless stop": "4.1.2 A" };
+function mk(tag, cls, parent, text) {
+  var e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text) e.textContent = text;
+  if (parent) parent.appendChild(e);
+  return e;
+}
+var tiles = mk("div", "tl", panel), probTile = mk("p", "ti", tiles), stopTile = mk("p", "ti", tiles), skipTile = mk("p", "ti", tiles);
+[probTile, stopTile, skipTile].forEach(function (t) { mk("b", "", t); mk("span", "", t, "skipped"); });
+var probBox = mk("div", "pbx", panel), levelEl = {};
+["AA", "A"].forEach(function (L) {
+  levelEl[L] = mk("div", "cd lvc", probBox);
+  levelEl[L].hidden = true;
+  mk("p", "lvh", levelEl[L]);
+});
+var ckCard = mk("div", "cd ck", panel), ckBtn = mk("button", "ckh", ckCard), ckWrap = mk("span", "ckw", ckBtn), ckBar = mk("span", "seg", ckWrap);
+var ckSeg = [mk("i", "sp", ckBar), mk("i", "sf", ckBar), mk("i", "sq", ckBar)], ckText = mk("span", "ckt", ckWrap), sumLine = mk("p", "sm", ckCard);
+mk("i", "", ckBtn);
+ckCard.hidden = sumLine.hidden = true;
+ckBtn.type = "button";
+ckBtn.setAttribute("aria-expanded", "false");
+ckBtn.addEventListener("click", function () {
+  sumLine.hidden = !sumLine.hidden;
+  ckBtn.setAttribute("aria-expanded", !sumLine.hidden);
+});
+var resCard = mk("div", "cd fx", panel), probs = {}, probOpen = {};
+function level(f) { return /(^|, )[\d.]+ A(,|$)/.test(WCAG[f] || "") ? "A" : "AA"; }
+function probGroup(f, n, text, src) {
+  var g = probs[f];
+  if (!g) {
+    var el = mk("div", "gk"), head = mk("button", "gh", el);
+    g = probs[f] = { n: 0, src: src, el: el, head: head, badge: mk("span", "nb", head), peek: mk("p", "gv", el), body: mk("div", "gb", el) };
+    head.type = "button";
+    mk("b", "", head, f);
+    mk("span", "wl", head, WCAG[f]);
+    mk("i", "", head);
+    g.peek.setAttribute("aria-hidden", "true");
+    head.addEventListener("click", function () {
+      probOpen[f] = head.getAttribute("aria-expanded") !== "true";
+      probLayout();
+    });
+  }
+  g.n += n;
+  g.badge.textContent = g.n;
+  mk("p", "gs", g.body, text);
+  return g.body;
+}
+function probClear(src) {
+  for (var f in probs) if (probs[f].src === src) {
+    probs[f].el.remove();
+    delete probs[f];
+  }
+}
+function probLayout() {
+  var list = CHECKS.filter(function (f) { return probs[f]; });
+  probBox.classList.toggle("scr", list.length > 8);
+  ["AA", "A"].forEach(function (L) {
+    var card = levelEl[L], prev = card.firstChild, n = 0, mine = list.filter(function (f) { return level(f) === L; });
+    card.hidden = !mine.length;
+    mine.forEach(function (f) {
+      var g = probs[f], open = f in probOpen ? probOpen[f] : L === "AA" || list.length < 5;
+      n += g.n;
+      g.head.setAttribute("aria-expanded", open);
+      g.body.hidden = !open;
+      g.peek.textContent = [].map.call(g.body.querySelectorAll(".c"), function (c) { return c.textContent; }).join(", ");
+      g.peek.hidden = open || !g.peek.textContent;
+      if (prev.nextSibling !== g.el) card.insertBefore(g.el, prev.nextSibling);
+      prev = g.el;
+    });
+    card.firstChild.textContent = "Level " + L + " \u00b7 " + pl(n, "problem", "problems");
+  });
+  tileDraw();
+}
+function tileDraw() {
+  var bad = logs ? logCounts().bad : 0;
+  [[probTile, bad, "problem"], [stopTile, stops.length, "Tab stop"], [skipTile, missed.length]].forEach(function (t) {
+    t[0].firstChild.textContent = t[1];
+    if (t[2]) t[0].lastChild.textContent = t[2] + (t[1] === 1 ? "" : "s");
+  });
+  probTile.className = "ti" + (bad ? " e" : walkEnd === "done" ? " ok" : "");
+}
 var shownEl = null, chips = [], drawn = [], panelIn = false, pRet = null;
 var KIND = { img: "Image", picture: "Image", svg: "Icon", i: "Icon", video: "Video", a: "Link", li: "List item", tr: "Table row", td: "Table cell" };
 var BARE = { button: "Button", textarea: "Field", select: "Dropdown", iframe: "Frame" };
@@ -663,7 +757,7 @@ function count(n, text, bad, good, parent) {
   else if (good) b.className = "ok";
   p.appendChild(b);
   p.appendChild(document.createTextNode(text));
-  (parent || info).appendChild(p);
+  parent.appendChild(p);
 }
 var CHIPS = 50;
 function chipUl(parent, list, text, go) {
@@ -691,29 +785,22 @@ function chipUl(parent, list, text, go) {
 }
 function fill() {
   var had = chips.indexOf(root.activeElement);
-  while (info.firstChild) info.removeChild(info.firstChild);
+  probClear("f");
   chips = [];
   drawn = sig();
-  count(stops.length, stops.length === 1 ? " stop for the Tab key" : " stops for the Tab key");
-  count(missed.length, missed.length === 0 ? " clickable things Tab skips" : missed.length === 1 ? " looks clickable, but Tab skips it" : " look clickable, but Tab skips them", missed.length > 0, missed.length === 0);
   if (missed.indexOf(shownEl) < 0 && hovers.indexOf(shownEl) < 0 && forcedBad.indexOf(shownEl) < 0) shownEl = null;
-  if (missed.length) chipList(missed);
-  if (hovers.length) {
-    count(hovers.length, hovers.length === 1 ? " menu or box opens only on mouse hover" : " menus or boxes open only on mouse hover", true);
-    chipList(hovers);
-  }
-  if (forcedBad.length) {
-    count(forcedBad.length, forcedBad.length === 1 ? " stop has tabindex above 0, which pulls it ahead of the page" : " stops have tabindex above 0, which pulls them ahead of the page", true);
-    chipList(forcedBad, true);
-  }
+  if (missed.length) chipList(probGroup("Missed spots", missed.length, missed.length === 1 ? "looks clickable, but Tab skips it" : "look clickable, but Tab skips them", "f"), missed);
+  if (hovers.length) chipList(probGroup("Hover menus", hovers.length, hovers.length === 1 ? "menu or box opens only on mouse hover" : "menus or boxes open only on mouse hover", "f"), hovers);
+  if (forcedBad.length) chipList(probGroup("Forced order", forcedBad.length, forcedBad.length === 1 ? "stop has tabindex above 0, which pulls it ahead of the page" : "stops have tabindex above 0, which pulls them ahead of the page", "f"), forcedBad, true);
+  probLayout();
   costDraw();
   mapDraw();
   if (skip) skipPanel();
   if (had >= 0 && chips.length) chips[Math.min(had, chips.length - 1)].focus();
 }
 function sig() { return [stops.length, mapOn && mapOn.checked && JSON.stringify(regions()[0]), costOn && costOn.checked && goals().map(function (g) { return g.presses + g.name; }).join()].concat(missed, ["|"], hovers, ["|"], forced, ["|"], forcedBad); }
-function chipList(list, num) {
-  var made = chipUl(info, list, function (m) { return (num && stops.indexOf(m) >= 0 ? stops.indexOf(m) + 1 + ": " : "") + label(m); }, function (m, c) {
+function chipList(parent, list, num) {
+  var made = chipUl(parent, list, function (m) { return (num && stops.indexOf(m) >= 0 ? stops.indexOf(m) + 1 + ": " : "") + label(m); }, function (m, c) {
     shownEl = m;
     chips.forEach(function (x) { x.setAttribute("aria-pressed", x === c ? "true" : "false"); });
     m.scrollIntoView({ block: "center", behavior: "smooth" });
@@ -751,7 +838,7 @@ resCard.appendChild(costBox);
 var mapBox = document.createElement("div");
 resCard.appendChild(mapBox);
 var jumpBox = document.createElement("div");
-resCard.appendChild(jumpBox);
+probBox.insertBefore(jumpBox, probBox.firstChild);
 panel.appendChild(group);
 var jumps = [], pressed = 0, before = -1, popMissed = null, lost = false;
 var POP = /cookie|consent|gdpr|modal|popup/i;
@@ -1243,6 +1330,7 @@ function stopName(e) {
 function byStop(list) { return list.slice().sort(function (a, b) { return stops.indexOf(a) - stops.indexOf(b); }); }
 function renderJumps() {
   while (jumpBox.firstChild) jumpBox.removeChild(jumpBox.firstChild);
+  probClear("j");
   if (macNote) {
     var mn = document.createElement("p");
     mn.className = "mn";
@@ -1250,54 +1338,45 @@ function renderJumps() {
     jumpBox.appendChild(mn);
   }
   if (popMissed) {
-    count(1, " popup blocks the page, but Tab goes somewhere else first", true, false, jumpBox);
-    chipUl(jumpBox, [popMissed], function () { return "Show the popup"; }, function (m) { m.scrollIntoView({ block: "center", behavior: "smooth" }); });
+    chipUl(probGroup("Out of order", 1, "popup blocks the page, but Tab goes somewhere else first", "j"), [popMissed], function () { return "Show the popup"; }, function (m) { m.scrollIntoView({ block: "center", behavior: "smooth" }); });
   }
   if (covered.length) {
-    count(covered.length, covered.length === 1 ? " stop is hidden when Tab reaches it" : " stops are hidden when Tab reaches them", true, false, jumpBox);
-    chipUl(jumpBox, byStop(covered), stopName, stopGo);
+    chipUl(probGroup("Hidden focus", covered.length, covered.length === 1 ? "stop is hidden when Tab reaches it" : "stops are hidden when Tab reaches them", "j"), byStop(covered), stopName, stopGo);
   }
   var gl = ghosts.filter(live), nl = noRing.filter(live);
   if (skipBad) {
-    count(1, " skip link goes nowhere", true, false, jumpBox);
-    chipUl(jumpBox, [skipBad.link], function (l) { return stopName(l) + " \u2192 " + skipBad.why; }, stopGo);
+    chipUl(probGroup("Broken skip link", 1, "skip link goes nowhere", "j"), [skipBad.link], function (l) { return stopName(l) + " \u2192 " + skipBad.why; }, stopGo);
   }
   if (noExit.length) {
-    count(noExit.length, noExit.length === 1 ? " popup has no keyboard way out" : " popups have no keyboard way out", true, false, jumpBox);
-    chipUl(jumpBox, noExit, function (x) { return popName(x[0]).l + ": Tab loops 1 to " + x[1]; }, function (x) { stopGo(stops.filter(function (y) { return within(x[0], y); })[0] || x[0]); });
+    chipUl(probGroup("No way out", noExit.length, noExit.length === 1 ? "popup has no keyboard way out" : "popups have no keyboard way out", "j"), noExit, function (x) { return popName(x[0]).l + ": Tab loops 1 to " + x[1]; }, function (x) { stopGo(stops.filter(function (y) { return within(x[0], y); })[0] || x[0]); });
   }
   var ml = nameless.filter(live);
   if (ml.length) {
-    count(ml.length, ml.length === 1 ? " stop has no name for screen readers" : " stops have no name for screen readers", true, false, jumpBox);
-    chipUl(jumpBox, byStop(ml), stopName, stopGo);
+    chipUl(probGroup("Nameless stop", ml.length, ml.length === 1 ? "stop has no name for screen readers" : "stops have no name for screen readers", "j"), byStop(ml), stopName, stopGo);
   }
-  if (noSkip) count(noSkip, " stops before the main content, and no skip link", true, false, jumpBox);
+  if (noSkip) probGroup("Broken skip link", 1, noSkip + " stops before the main content, and no skip link", "j");
   if (gl.length) {
-    count(gl.length, gl.length === 1 ? " stop you can't see when Tab is on it" : " stops you can't see when Tab is on them", true, false, jumpBox);
-    chipUl(jumpBox, runs(gl), function (g) { return span(g) + ": " + label(g[0]) + ", " + GHOST[ghostOf.get(g[0])].replace(/^(is|has) (inside )?/, ""); }, function (g) { stopGo(g[0]); });
+    chipUl(probGroup("Ghost stop", gl.length, gl.length === 1 ? "stop you can't see when Tab is on it" : "stops you can't see when Tab is on them", "j"), runs(gl), function (g) { return span(g) + ": " + label(g[0]) + ", " + GHOST[ghostOf.get(g[0])].replace(/^(is|has) (inside )?/, ""); }, function (g) { stopGo(g[0]); });
   }
   if (nl.length) {
-    count(nl.length, nl.length === 1 ? " stop shows no focus when Tab is on it" : " stops show no focus when Tab is on them", true, false, jumpBox);
-    chipUl(jumpBox, byStop(nl), stopName, stopGo);
+    chipUl(probGroup("No focus style", nl.length, nl.length === 1 ? "stop shows no focus when Tab is on it" : "stops show no focus when Tab is on them", "j"), byStop(nl), stopName, stopGo);
   }
   if (trapped.length) {
-    count(trapped.length, trapped.length === 1 ? " stop where Tab gets stuck" : " stops where Tab gets stuck", true, false, jumpBox);
-    chipUl(jumpBox, byStop(trapped), stopName, stopGo);
+    chipUl(probGroup("Keyboard trap", trapped.length, trapped.length === 1 ? "stop where Tab gets stuck" : "stops where Tab gets stuck", "j"), byStop(trapped), stopName, stopGo);
   }
   if (lostPops.length) {
-    count(lostPops.length, lostPops.length === 1 ? " popup loses focus when it closes" : " popups lose focus when they close", true, false, jumpBox);
-    chipUl(jumpBox, lostPops, function (l) {
+    chipUl(probGroup("Lost focus", lostPops.length, lostPops.length === 1 ? "popup loses focus when it closes" : "popups lose focus when they close", "j"), lostPops, function (l) {
       var i = stops.indexOf(l[0]);
       return (i >= 0 ? i + 1 : label(l[0])) + " \u2192 Start";
     }, function (l) { stopGo(l[0]); });
   }
   if (jumps.length) {
-    count(jumps.length, jumps.length === 1 ? " time Tab jumped out of order" : " times Tab jumped out of order", true, false, jumpBox);
-    chipUl(jumpBox, jumps, function (j) {
+    chipUl(probGroup("Out of order", jumps.length, jumps.length === 1 ? "time Tab jumped out of order" : "times Tab jumped out of order", "j"), jumps, function (j) {
       var from = j[0] ? stops.indexOf(j[0]) + 1 || label(j[0]) : "Start", to = stops.indexOf(j[1]) + 1;
       return from + " \u2192 " + (to || "?");
     }, function (j) { stopGo(j[1]); });
   }
+  probLayout();
   if (skip) skipPanel();
 }
 var legend = document.createElement("div");
@@ -1683,8 +1762,6 @@ function browser() {
   if ((m = u.match(/Version\/(\d+)[^ ]* (Mobile\/\S+ )?Safari/))) return "Safari " + m[1];
   return u;
 }
-var CHECKS = ["Missed spots", "Hover menus", "Forced order", "Out of order", "Keyboard trap", "Hidden focus", "Lost focus", "No focus style", "Ghost stop", "Broken skip link", "No way out", "Nameless stop"];
-var WCAG = { "Missed spots": "2.1.1 A", "Hover menus": "2.1.1 A", "Out of order": "2.4.3 A", "Forced order": "2.4.3 A", "Keyboard trap": "2.1.2 A", "Lost focus": "2.4.3 A", "Hidden focus": "2.4.11 AA", "No focus style": "2.4.7 AA", "Ghost stop": "2.4.7 AA", "Broken skip link": "2.4.1 A", "No way out": "2.1.2 A", "Nameless stop": "4.1.2 A" };
 function showUrl(f) { return "https://matjazkorosec.com/tools/tab-trail#show-" + f.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
 function ranChecks() {
   var out = [];
@@ -2221,6 +2298,7 @@ function filters(parent, doc) {
 }
 function logSummary() {
   var c = logCounts();
+  tileDraw();
   logSum.textContent = " " + pl(c.all, "event", "events");
   logBad.textContent = c.bad ? pl(c.bad, "problem", "problems") : "";
   logGroup.classList.toggle("warn", c.bad > 0);
@@ -2866,6 +2944,8 @@ function playLook() {
   playWord.textContent = walking ? "Pause" : "Play";
   play.setAttribute("aria-pressed", walking ? "true" : "false");
   if (walked.size) playText.textContent = "Walked " + walkedN() + " of " + stops.length + " stops";
+  playTrack.hidden = !walked.size;
+  playFill.style.width = Math.round(100 * walkedN() / Math.max(stops.length, 1)) + "%";
 }
 function walkedText() { return " after " + walkedN() + " of " + pl(stops.length, "stop", "stops") + "."; }
 function stopWalk(why, fin) {
@@ -2934,12 +3014,19 @@ function untested() {
   return ["Out of order", "Keyboard trap", "Lost focus", "No way out", "Broken skip link"].filter(function (f) { return !judged[f]; });
 }
 function sumDraw() {
-  sumLine.hidden = walking || walkEnd !== "done";
-  if (sumLine.hidden) return;
+  tileDraw();
+  ckCard.hidden = walking || walkEnd !== "done";
+  if (ckCard.hidden) return;
   var per = {}, probs = openProbs(), left = untested();
   probs.forEach(function (e) { per[e.f] = (per[e.f] || 0) + 1; });
   var red = CHECKS.filter(function (f) { return per[f]; }), ok = CHECKS.filter(function (f) { return !per[f] && left.indexOf(f) < 0; });
   var tabLeft = left.indexOf("Out of order") >= 0 || left.indexOf("Keyboard trap") >= 0, popLeft = left.indexOf("Lost focus") >= 0 || left.indexOf("No way out") >= 0;
+  ckText.textContent = "";
+  [[ok, " passed", "g"], [red, " failed", "e"], [left, " not tested"]].forEach(function (t, i) {
+    ckSeg[i].style.flexGrow = t[0].length;
+    if (i) ckText.appendChild(document.createTextNode(" \u00b7 "));
+    mk("span", t[2], ckText, t[0].length + t[1]);
+  });
   while (sumLine.firstChild) sumLine.removeChild(sumLine.firstChild);
   var b = document.createElement("b");
   b.textContent = pl(CHECKS.length, "check", "checks") + ": " + ok.length + " passed, " + red.length + (red.length === 1 ? " found a problem, " : " found problems, ") + left.length + " not tested.";

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Panel: the problem count and the problems come first, grouped by WCAG level AA then A. What was checked folds into a bar below them.
+
 ## 1.2.0 (2026-11-23)
 
 Every red mark at once with play({ quiet: true }), and steadier No focus style results.
