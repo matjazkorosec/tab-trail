@@ -402,6 +402,10 @@ style.textContent = [
   ".ckw{flex:1}.seg{display:flex;height:8px;border-radius:4px;overflow:hidden}.seg i{flex:0 0 0}.sp{background:#1f7a3f}.sf{background:#d0103a}.sq{background:#c9c0b0}",
   ".ckt{display:block;margin-top:4px;font-size:13px;font-weight:400;color:#5f564c}.ckt .g{color:#1f7a3f}.ckt .e{color:#d0103a}.ck .sm{margin-top:8px}",
   ".fx:not(:has(>div:not(:empty))){display:none}",
+  ".tu span{flex:1}.tu small{display:block;font-size:12px;color:#5f564c}",
+  ".tg{all:unset;position:relative;flex:none;width:36px;height:20px;border-radius:999px;background:#c9c0b0;cursor:pointer}",
+  ".tg:after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3)}",
+  ".tg[aria-checked=true]{background:#c2410c}.tg[aria-checked=true]:after{left:18px}.tg:focus-visible{outline:3px solid #c2410c;outline-offset:2px}",
   ".qm{font-weight:800;font-size:14px}.qm[aria-expanded=true]{background:#1a1612;color:#fbf8f3}",
   ".hp{position:absolute;top:42px;right:6px;z-index:2;width:270px;padding:10px 12px;background:#fbf8f3;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.28)}",
   ".hh{margin:0;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#5f564c}.hp .so{padding:0 0 8px}",
@@ -1482,6 +1486,14 @@ costOn.addEventListener("change", function () {
   costDraw();
   queue();
 });
+var turboRow = mk("div", "k tu"), turboText = mk("span", "", turboRow, "Turbo play"), turbo = mk("button", "tg", turboRow);
+mk("small", "", turboText, "Waits 80 ms at each stop instead of 400 ms");
+turbo.type = "button";
+turbo.setAttribute("role", "switch");
+turbo.setAttribute("aria-checked", "false");
+turbo.setAttribute("aria-label", "Turbo play");
+turbo.addEventListener("click", function () { turbo.setAttribute("aria-checked", turbo.getAttribute("aria-checked") !== "true"); });
+settings.insertBefore(turboRow, settings.firstChild);
 var picked = null, picking = false, pickAt = null, costGoals = [], PICKS = ["pointermove", "pointerdown", "mousedown", "pointerup", "mouseup", "click", "auxclick", "dblclick", "contextmenu"], GOALW = /(^|[^a-z\u010d\u0161\u017e])(add to cart|buy|checkout|book|reserve|subscribe|sign up|register|download|contact|get started|donate|v ko\u0161arico|kupi|naro\u010di|rezerviraj|prijava|naro\u010di se|prenesi|kontakt)(?![a-z\u010d\u0161\u017e])/i;
 function mainStop() {
   var m = mainRegion();
@@ -3053,7 +3065,7 @@ function quietWalk(delay) {
 }
 play.addEventListener("click", function () {
   if (walking) return stopWalk("Paused with the Pause button" + walkedText());
-  walkDelay = 400;
+  walkDelay = turbo.getAttribute("aria-checked") === "true" ? 80 : 400;
   startWalk();
 });
 function interrupt(e) {
