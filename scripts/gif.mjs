@@ -10,7 +10,7 @@ const PAGE = process.argv[2] || "https://matjazkorosec.com/tools/tab-trail";
 const OUT = join(root, ".github/assets/trail.gif");
 const LIMIT = 3 * 1024 * 1024;
 const W = 1440;
-const H = 720;
+const H = 940;
 
 if (spawnSync("ffmpeg", ["-version"]).status !== 0) {
   console.error("ffmpeg is not installed. Install it and run this again:");
@@ -28,11 +28,12 @@ try {
     viewport: { width: W, height: H },
     recordVideo: { dir, size: { width: W, height: H } },
   });
+  await context.addInitScript(() => { try { localStorage.setItem("dev-audience-closed", "1"); localStorage.setItem("mk-notrack", "1"); } catch {} });
   const page = await context.newPage();
   const t0 = Date.now();
   await page.goto(PAGE, { waitUntil: "networkidle" });
   await page.addStyleTag({
-    content: "nextjs-portal{display:none!important}html{scrollbar-width:none}html::-webkit-scrollbar{display:none}",
+    content: "nextjs-portal,button[aria-label=\"Show audience switcher\"]{display:none!important}main{padding-top:24px!important}html{scrollbar-width:none}html::-webkit-scrollbar{display:none}",
   });
   const start = (Date.now() - t0) / 1000;
   await page.waitForTimeout(3000);
@@ -63,7 +64,7 @@ try {
       "-i",
       video,
       "-vf",
-      "fps=12,scale=1280:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=192:stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=4:diff_mode=rectangle",
+      "fps=12,scale=1280:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=128:stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=4:diff_mode=rectangle",
       "-loop",
       "0",
       OUT,
