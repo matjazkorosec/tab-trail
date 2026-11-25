@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Panel: the problem count and the problems come first, grouped by WCAG level AA then A. What was checked folds into a bar below them.
+- Panel: Legend and Shortcuts open from a ? button in the title bar, and the footer is 1 line.
 
 ## 1.2.0 (2026-11-23)
 
